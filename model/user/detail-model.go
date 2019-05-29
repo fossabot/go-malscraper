@@ -1,6 +1,6 @@
 package user
 
-// ----- MAIN USER MODEL -----
+// UserData for main user data model.
 type UserData struct {
 	About          string    `json:"about"`
 	AnimeStat      AnimeStat `json:"anime_stat"`
@@ -22,13 +22,15 @@ type UserData struct {
 	Username       string    `json:"username"`
 }
 
-// ----- ANIME & MANGA STATISTIC -----
+// AnimeStat for anime statistic model.
 type AnimeStat struct {
 	Days      string      `json:"days"`
 	History   []History   `json:"history"`
 	MeanScore string      `json:"mean_score"`
 	Status    AnimeStatus `json:"status"`
 }
+
+// MangaStat for manga statistic model.
 type MangaStat struct {
 	Days      string      `json:"days"`
 	History   []History   `json:"history"`
@@ -36,7 +38,7 @@ type MangaStat struct {
 	Status    MangaStatus `json:"status"`
 }
 
-// ----- HISTORY -----
+// History for anime & manga history model.
 type History struct {
 	Date     string `json:"date"`
 	Id       string `json:"id"`
@@ -47,7 +49,7 @@ type History struct {
 	Title    string `json:"title"`
 }
 
-// ----- ANIME & MANGA PROGRESS STATUS -----
+// AnimeStatus for anime progress status model.
 type AnimeStatus struct {
 	Completed   string `json:"completed"`
 	Dropped     string `json:"dropped"`
@@ -58,6 +60,8 @@ type AnimeStatus struct {
 	Total       string `json:"total"`
 	Watching    string `json:"watching"`
 }
+
+// MangaStatus for manga progress status model.
 type MangaStatus struct {
 	Chapter    string `json:"chapter"`
 	Completed  string `json:"completed"`
@@ -70,23 +74,27 @@ type MangaStatus struct {
 	Volume     string `json:"volume"`
 }
 
-// ---- FRIEND -----
+// Friend for friend data model.
 type Friend struct {
 	Count string       `json:"count"`
 	Data  []FriendData `json:"data"`
 }
+
+// FriendData for friend detail data model.
 type FriendData struct {
 	Image string `json:"image"`
 	Name  string `json:"name"`
 }
 
-// ----- FAVORITE -----
+// Favorite for favorite data model.
 type Favorite struct {
 	Anime     []FavAnimeManga `json:"anime"`
 	Character []FavCharacter  `json:"character"`
 	Manga     []FavAnimeManga `json:"manga"`
 	People    []FavPeople     `json:"people"`
 }
+
+// FavAnimeManga for anime & manga favorite detail data model.
 type FavAnimeManga struct {
 	Id    string `json:"id"`
 	Image string `json:"image"`
@@ -94,6 +102,8 @@ type FavAnimeManga struct {
 	Type  string `json:"type"`
 	Year  string `json:"year"`
 }
+
+// FavCharacter for character favorite detail data model.
 type FavCharacter struct {
 	Id         string `json:"id"`
 	Image      string `json:"image"`
@@ -102,6 +112,8 @@ type FavCharacter struct {
 	MediaType  string `json:"media_type"`
 	Name       string `json:"name"`
 }
+
+// FavPeople for people favorite detail data model.
 type FavPeople struct {
 	Id    string `json:"id"`
 	Image string `json:"image"`

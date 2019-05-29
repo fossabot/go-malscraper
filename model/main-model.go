@@ -6,8 +6,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// MyAnimeListUrl for MyAnimeList base url.
 const MyAnimeListUrl string = "https://myanimelist.net"
 
+// MainModel is base model for all model in go-malscraper.
 type MainModel struct {
 	MyAnimeListUrl string
 	Parser         *goquery.Document
@@ -17,12 +19,14 @@ type MainModel struct {
 	ErrorMessage   string
 }
 
+// InitModel to initiate fields of MainModel.
 func (c *MainModel) InitModel() {
 	c.MyAnimeListUrl = MyAnimeListUrl
 	c.Url = c.MyAnimeListUrl + c.Url
 	c.Parser = c.GetParser(c.Url)
 }
 
+// GetParser to get goquest parser to parse html.
 func (c *MainModel) GetParser(url string) *goquery.Document {
 	res, err := http.Get(url)
 	if err != nil {
@@ -46,6 +50,7 @@ func (c *MainModel) GetParser(url string) *goquery.Document {
 	return doc
 }
 
+// SetMessage to set (error) message for models.
 func (c *MainModel) SetMessage(responseCode int, errorMessage string) {
 	c.ResponseCode = responseCode
 	c.ErrorMessage = errorMessage

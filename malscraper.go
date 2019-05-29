@@ -4,11 +4,13 @@ import (
 	"github.com/rl404/go-malscraper/model/user"
 )
 
+// MalScraper is the main function to call all method in go-malscraper.
 func MalScraper() *MalService {
 	m := &MalService{}
 	return m
 }
 
+// MalService for all go-malscraper service.
 type MalService struct {
 	User *UserService
 	// General		*GeneralService
@@ -19,8 +21,10 @@ type MalService struct {
 	// Top			*TopService
 }
 
+// UserService for all user-related method.
 type UserService struct{}
 
+// GetUser to get user profile information
 func (u *UserService) GetUser(username string) (user.UserData, int, string) {
 	var userModel user.UserModel
 	return userModel.InitUserModel(username)

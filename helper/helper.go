@@ -3,6 +3,7 @@ package helper
 import "regexp"
 import "strings"
 
+// ImageUrlCleaner to clean dirty image url.
 func ImageUrlCleaner(str string) string {
 	match, _ := regexp.MatchString("(questionmark)|(qm_50)", str)
 
@@ -23,16 +24,10 @@ func ImageUrlCleaner(str string) string {
 	return str
 }
 
+// VideoUrlCleaner to clean dirty video url.
 func VideoUrlCleaner(str string) string {
 	r, _ := regexp.Compile(`\?.+`)
 	str = r.ReplaceAllString(str, "")
 
 	return str
-}
-
-func MapMerge(map1 map[string]string, map2 map[string]string) map[string]string {
-	for i := range map2 {
-		map1[i] = map2[i]
-	}
-	return map1
 }
