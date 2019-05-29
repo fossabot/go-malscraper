@@ -2,38 +2,38 @@ package user
 
 // ----- MAIN USER MODEL -----
 type UserData struct {
-	About          	string   	`json:"about"`
-	AnimeStat      	AnimeStat   `json:"anime_stat"`
-	Birthday       	string      `json:"birthday"`
-	BlogPost       	string      `json:"blog_post"`
-	Club           	string      `json:"club"`
-	Favorite       	Favorite    `json:"favorite"`
-	ForumPost      	string      `json:"forum_post"`
-	Friend         	Friend      `json:"friend"`
-	Gender         	string      `json:"gender"`
-	Image          	string      `json:"image"`
-	JoinedDate     	string      `json:"joined_date"`
-	LastOnline     	string      `json:"last_online"`
-	Location       	string      `json:"location"`
-	MangaStat      	MangaStat   `json:"manga_stat"`
-	Recommendation 	string      `json:"recommendation"`
-	Review         	string      `json:"review"`
-	Sns            	[]string 	`json:"sns"`
-	Username       	string      `json:"username"`
+	About          string    `json:"about"`
+	AnimeStat      AnimeStat `json:"anime_stat"`
+	Birthday       string    `json:"birthday"`
+	BlogPost       string    `json:"blog_post"`
+	Club           string    `json:"club"`
+	Favorite       Favorite  `json:"favorite"`
+	ForumPost      string    `json:"forum_post"`
+	Friend         Friend    `json:"friend"`
+	Gender         string    `json:"gender"`
+	Image          string    `json:"image"`
+	JoinedDate     string    `json:"joined_date"`
+	LastOnline     string    `json:"last_online"`
+	Location       string    `json:"location"`
+	MangaStat      MangaStat `json:"manga_stat"`
+	Recommendation string    `json:"recommendation"`
+	Review         string    `json:"review"`
+	Sns            []string  `json:"sns"`
+	Username       string    `json:"username"`
 }
 
 // ----- ANIME & MANGA STATISTIC -----
 type AnimeStat struct {
-	Days      	string    	`json:"days"`
-	History   	[]History 	`json:"history"`
-	MeanScore 	string    	`json:"mean_score"`
-	Status    	AnimeStatus `json:"status"`
+	Days      string      `json:"days"`
+	History   []History   `json:"history"`
+	MeanScore string      `json:"mean_score"`
+	Status    AnimeStatus `json:"status"`
 }
 type MangaStat struct {
-	Days      	string    	`json:"days"`
-	History   	[]History 	`json:"history"`
-	MeanScore 	string    	`json:"mean_score"`
-	Status    	MangaStatus `json:"status"`
+	Days      string      `json:"days"`
+	History   []History   `json:"history"`
+	MeanScore string      `json:"mean_score"`
+	Status    MangaStatus `json:"status"`
 }
 
 // ----- HISTORY -----
@@ -72,8 +72,8 @@ type MangaStatus struct {
 
 // ---- FRIEND -----
 type Friend struct {
-	Count string 		`json:"count"`
-	Data  []FriendData 	`json:"data"`
+	Count string       `json:"count"`
+	Data  []FriendData `json:"data"`
 }
 type FriendData struct {
 	Image string `json:"image"`
@@ -82,10 +82,10 @@ type FriendData struct {
 
 // ----- FAVORITE -----
 type Favorite struct {
-	Anime     []FavAnimeManga   `json:"anime"`
-	Character []FavCharacter 	`json:"character"`
-	Manga     []FavAnimeManga   `json:"manga"`
-	People    []FavPeople    	`json:"people"`
+	Anime     []FavAnimeManga `json:"anime"`
+	Character []FavCharacter  `json:"character"`
+	Manga     []FavAnimeManga `json:"manga"`
+	People    []FavPeople     `json:"people"`
 }
 type FavAnimeManga struct {
 	Id    string `json:"id"`

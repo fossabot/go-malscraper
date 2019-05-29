@@ -1,20 +1,20 @@
 package model
 
 import (
-  "net/http"
+	"net/http"
 
-  "github.com/PuerkitoBio/goquery"
+	"github.com/PuerkitoBio/goquery"
 )
 
 const MyAnimeListUrl string = "https://myanimelist.net"
 
 type MainModel struct {
-	MyAnimeListUrl 	string
-	Parser 			*goquery.Document
-	ParserArea 		string
-	Url 			string
-	ResponseCode 	int
-	ErrorMessage 	string
+	MyAnimeListUrl string
+	Parser         *goquery.Document
+	ParserArea     string
+	Url            string
+	ResponseCode   int
+	ErrorMessage   string
 }
 
 func (c *MainModel) InitModel() {

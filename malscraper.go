@@ -10,7 +10,7 @@ func MalScraper() *MalService {
 }
 
 type MalService struct {
-	User		*UserService
+	User *UserService
 	// General		*GeneralService
 	// Additional	*AdditionalService
 	// Lists		*ListsService
@@ -19,7 +19,7 @@ type MalService struct {
 	// Top			*TopService
 }
 
-type UserService struct {}
+type UserService struct{}
 
 func (u *UserService) GetUser(username string) (user.UserData, int, string) {
 	var userModel user.UserModel
