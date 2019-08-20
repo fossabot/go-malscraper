@@ -1,6 +1,8 @@
 package user
 
 import (
+	_ "fmt"
+	_ "reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,15 +22,22 @@ type UserModel struct {
 // InitUserModel to initiate fields in parent (MainModel) model.
 func (u *UserModel) InitUserModel(user string) (UserData, int, string) {
 	u.User = user
-	u.Url = "/profile/" + u.User
-	u.ParserArea = "#content"
-	u.InitModel()
+	u.InitModel("/profile/"+u.User, "#content")
+
+	// value, err := helper.GetFromCache(u.Url)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(reflect.TypeOf(value), value)
+
+	u.Parser = u.GetParser(u.Url)
 
 	if u.ResponseCode != 200 {
 		return u.Data, u.ResponseCode, u.ErrorMessage
 	}
 
 	u.SetAllDetail()
+	u.IsCached = false
 
 	return u.Data, u.ResponseCode, u.ErrorMessage
 }
@@ -45,6 +54,8 @@ func (u *UserModel) SetAllDetail() {
 	u.SetStatistic("anime")
 	u.SetStatistic("manga")
 	u.SetFavorite()
+
+	// helper.SaveToCache(u.Url, u.Data)
 }
 
 // SetUsername to set username.

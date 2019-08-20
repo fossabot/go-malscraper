@@ -1,7 +1,9 @@
 package helper
 
-import "regexp"
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 // ImageUrlCleaner to clean dirty image url.
 func ImageUrlCleaner(str string) string {

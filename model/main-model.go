@@ -11,19 +11,18 @@ const MyAnimeListUrl string = "https://myanimelist.net"
 
 // MainModel is base model for all model in go-malscraper.
 type MainModel struct {
-	MyAnimeListUrl string
-	Parser         *goquery.Document
-	ParserArea     string
-	Url            string
-	ResponseCode   int
-	ErrorMessage   string
+	Parser       *goquery.Document
+	ParserArea   string
+	Url          string
+	ResponseCode int
+	ErrorMessage string
+	IsCached     bool
 }
 
 // InitModel to initiate fields of MainModel.
-func (c *MainModel) InitModel() {
-	c.MyAnimeListUrl = MyAnimeListUrl
-	c.Url = c.MyAnimeListUrl + c.Url
-	c.Parser = c.GetParser(c.Url)
+func (c *MainModel) InitModel(url string, parserArea string) {
+	c.Url = MyAnimeListUrl + url
+	c.ParserArea = parserArea
 }
 
 // GetParser to get goquest parser to parse html.
