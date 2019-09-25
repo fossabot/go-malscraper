@@ -118,3 +118,25 @@ type Recommendation struct {
 	Image string `json:"image"`
 	User  string `json:"user"`
 }
+
+// CharacterData for main anime & manga data model.
+type CharacterData struct {
+	Id           string             `json:"id"`
+	Image        string             `json:"image"`
+	Nickname     string             `json:"nickname"`
+	Name         string             `json:"name"`
+	NameKanji    string             `json:"name_kanji"`
+	Favorite     string             `json:"favorite"`
+	About        string             `json:"about"`
+	Animeography []IdTitleImageRole `json:"animeography"`
+	Mangaography []IdTitleImageRole `json:"mangaography"`
+	Va           []Staff            `json:"va"`
+}
+
+// IdTitleImageRole is common model for animeography and mangaography.
+type IdTitleImageRole struct {
+	Id    string `json:"id"`
+	Title string `json:"title"`
+	Image string `json:"image"`
+	Role  string `json:"role"`
+}

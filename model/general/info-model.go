@@ -296,7 +296,11 @@ func (i *InfoModel) GetCleanInfo(infoArea *goquery.Selection) string {
 func (i *InfoModel) GetAiringInfo(infoValue string) (string, string) {
 	if infoValue != "Not available" {
 		splitDate := strings.Split(infoValue, " to ")
-		return splitDate[0], splitDate[1]
+		if len(splitDate) > 1 {
+			return splitDate[0], splitDate[1]
+		} else {
+			return splitDate[0], ""
+		}
 	}
 	return "", ""
 }
@@ -474,7 +478,7 @@ func (i *InfoModel) GetCleanSong(div string) []string {
 func (i *InfoModel) SetReview() {
 	var reviewList []Review
 	reviewArea := i.Parser.Find(".js-scrollfix-bottom-rel table tr:nth-of-type(2)")
-	reviewArea.Find(".borderDark").Each(func(j int, eachReview *goquery.Selection) {
+	reviewArea.Find(".borderDark[style^=padding]").Each(func(j int, eachReview *goquery.Selection) {
 		topArea := eachReview.Find(".spaceit:nth-of-type(1)")
 		bottomArea := topArea.Next()
 		veryBottomArea := bottomArea.Next()

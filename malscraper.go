@@ -39,3 +39,9 @@ func (g *GeneralService) GetInfo(t string, id int) (general.InfoData, int, strin
 	var InfoModel general.InfoModel
 	return InfoModel.InitInfoModel(t, id)
 }
+
+// GetCharacter to get charater information.
+func (g *GeneralService) GetCharacter(id int) (general.CharacterData, int, string) {
+	var CharacterModel general.CharacterModel
+	return CharacterModel.InitCharacterModel(id)
+}
