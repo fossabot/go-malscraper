@@ -119,7 +119,7 @@ type Recommendation struct {
 	User  string `json:"user"`
 }
 
-// CharacterData for main anime & manga data model.
+// CharacterData for main character data model.
 type CharacterData struct {
 	Id           string             `json:"id"`
 	Image        string             `json:"image"`
@@ -139,4 +139,61 @@ type IdTitleImageRole struct {
 	Title string `json:"title"`
 	Image string `json:"image"`
 	Role  string `json:"role"`
+}
+
+// PeopleData for main people data model.
+type PeopleData struct {
+	Id           	string             `json:"id"`
+	Name         	string             `json:"name"`
+	Image        	string             `json:"image"`
+	GivenName    	string             `json:"given_name"`
+	FamilyName   	string             `json:"family_name"`
+	AlternativeName []string           `json:"alternative_name"`
+	Birthday		string             `json:"birthday"`
+	Website			string             `json:"website"`
+	Favorite     	string             `json:"favorite"`
+	More	        string             `json:"more"`
+	Va           	[]AnimeCharacter   `json:"va"`
+	Staff           []IdTitleImageRole `json:"staff"`
+	PublishedManga  []IdTitleImageRole `json:"published_manga"`
+}
+
+// AnimeCharacter for anime character role of the va.
+type AnimeCharacter struct {
+	Anime 		IdImageTitle 	`json:"anime"`
+	Character 	Staff 			`json:"character"`
+}
+
+// IdImageTitle is common model for a simple anime model.
+type IdImageTitle struct {
+	Id 			string 		`json:"id"`
+	Image 		string 		`json:"image"`
+	Title 		string 		`json:"title"`
+}
+
+// ProducerData form main studio/producer/magazine data model.
+type ProducerData struct {
+	Id 				string 			`json:"id"`
+	Image 			string 			`json:"image"`
+	Title 			string 			`json:"title"`
+	Genre 			[]IdTypeName	`json:"genre"`
+	Synopsis 		string 			`json:"synopsis"`
+	Source 			string 			`json:"source"`
+	Producer 		[]IdName 		`json:"producer"`
+	Author 	 		[]IdName 		`json:"author"` 		// manga
+	Episode 		string 			`json:"episode"`
+	Volumes 		string 			`json:"volume"` 		// manga
+	Licensor 		[]string 		`json:"licensor"`
+	Serialization 	string 			`json:"serialization"` 	// manga
+	Type 			string 			`json:"type"`
+	AiringStart 	string 			`json:"airing_start"`
+	Member 			string 			`json:"member"`
+	Score 			string 			`json:"score"`
+}
+
+// IdTypeName is common model for genre.
+type IdTypeName struct {
+	Id 		string 	`json:"id"`
+	Type 	string 	`json:"type"`
+	Name 	string 	`json:"name"`
 }

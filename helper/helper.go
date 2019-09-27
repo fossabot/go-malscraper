@@ -33,3 +33,14 @@ func VideoUrlCleaner(str string) string {
 
 	return str
 }
+
+// ArrayFilter to remove empty string from slice.
+func ArrayFilter(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
+}
