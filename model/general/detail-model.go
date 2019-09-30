@@ -143,57 +143,97 @@ type IdTitleImageRole struct {
 
 // PeopleData for main people data model.
 type PeopleData struct {
-	Id           	string             `json:"id"`
-	Name         	string             `json:"name"`
-	Image        	string             `json:"image"`
-	GivenName    	string             `json:"given_name"`
-	FamilyName   	string             `json:"family_name"`
+	Id              string             `json:"id"`
+	Name            string             `json:"name"`
+	Image           string             `json:"image"`
+	GivenName       string             `json:"given_name"`
+	FamilyName      string             `json:"family_name"`
 	AlternativeName []string           `json:"alternative_name"`
-	Birthday		string             `json:"birthday"`
-	Website			string             `json:"website"`
-	Favorite     	string             `json:"favorite"`
-	More	        string             `json:"more"`
-	Va           	[]AnimeCharacter   `json:"va"`
+	Birthday        string             `json:"birthday"`
+	Website         string             `json:"website"`
+	Favorite        string             `json:"favorite"`
+	More            string             `json:"more"`
+	Va              []AnimeCharacter   `json:"va"`
 	Staff           []IdTitleImageRole `json:"staff"`
 	PublishedManga  []IdTitleImageRole `json:"published_manga"`
 }
 
 // AnimeCharacter for anime character role of the va.
 type AnimeCharacter struct {
-	Anime 		IdImageTitle 	`json:"anime"`
-	Character 	Staff 			`json:"character"`
+	Anime     IdImageTitle `json:"anime"`
+	Character Staff        `json:"character"`
 }
 
 // IdImageTitle is common model for a simple anime model.
 type IdImageTitle struct {
-	Id 			string 		`json:"id"`
-	Image 		string 		`json:"image"`
-	Title 		string 		`json:"title"`
+	Id    string `json:"id"`
+	Image string `json:"image"`
+	Title string `json:"title"`
 }
 
-// ProducerData form main studio/producer/magazine data model.
+// ProducerData for main studio/producer/magazine data model.
 type ProducerData struct {
-	Id 				string 			`json:"id"`
-	Image 			string 			`json:"image"`
-	Title 			string 			`json:"title"`
-	Genre 			[]IdTypeName	`json:"genre"`
-	Synopsis 		string 			`json:"synopsis"`
-	Source 			string 			`json:"source"`
-	Producer 		[]IdName 		`json:"producer"`
-	Author 	 		[]IdName 		`json:"author"` 		// manga
-	Episode 		string 			`json:"episode"`
-	Volumes 		string 			`json:"volume"` 		// manga
-	Licensor 		[]string 		`json:"licensor"`
-	Serialization 	string 			`json:"serialization"` 	// manga
-	Type 			string 			`json:"type"`
-	AiringStart 	string 			`json:"airing_start"`
-	Member 			string 			`json:"member"`
-	Score 			string 			`json:"score"`
+	Id            string       `json:"id"`
+	Image         string       `json:"image"`
+	Title         string       `json:"title"`
+	Genre         []IdTypeName `json:"genre"`
+	Synopsis      string       `json:"synopsis"`
+	Source        string       `json:"source"`
+	Producer      []IdName     `json:"producer"`
+	Author        []IdName     `json:"author"` // manga
+	Episode       string       `json:"episode"`
+	Volumes       string       `json:"volume"` // manga
+	Licensor      []string     `json:"licensor"`
+	Serialization string       `json:"serialization"` // manga
+	Type          string       `json:"type"`
+	AiringStart   string       `json:"airing_start"`
+	Member        string       `json:"member"`
+	Score         string       `json:"score"`
 }
 
 // IdTypeName is common model for genre.
 type IdTypeName struct {
-	Id 		string 	`json:"id"`
-	Type 	string 	`json:"type"`
-	Name 	string 	`json:"name"`
+	Id   string `json:"id"`
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
+// RecommendationData for anime/manga recommendation data model.
+type RecommendationData struct {
+	Source         RecomSource `json:"source"`
+	Recommendation []RecomList `json:"recommendation"`
+}
+
+// RecomSource for recommendation source model.
+type RecomSource struct {
+	Liked          IdTitleTypeImage `json:"liked"`
+	Recommendation IdTitleTypeImage `json:"recommendation"`
+}
+
+// IdTitleTypeImage is common model for recommendation liked model.
+type IdTitleTypeImage struct {
+	Id    string `json:"id"`
+	Title string `json:"title"`
+	Type  string `json:"type"`
+	Image string `json:"image"`
+}
+
+// RecomList for recommendation content the user write.
+type RecomList struct {
+	Username       string `json:"username"`
+	Recommendation string `json:"recommendation"`
+}
+
+// ReviewData for review main model.
+type ReviewData struct {
+	Id       string            `json:"id"`
+	Source   IdTitleTypeImage  `json:"source"`
+	Username string            `json:"username"`
+	Image    string            `json:"image"`
+	Helpful  string            `json:"helpful"`
+	Date     ReviewDate        `json:"date"`
+	Episode  string            `json:"episode"`
+	Chapter  string            `json:"chapter"` // manga
+	Score    map[string]string `json:"score"`
+	Review   string            `json:"review"`
 }

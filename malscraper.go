@@ -69,3 +69,15 @@ func (g *GeneralService) GetGenre(t string, id int, page int) ([]general.Produce
 	var ProducerModel general.ProducerModel
 	return ProducerModel.InitProducerModel(t, "genre", id, page)
 }
+
+// GetRecommendation to get anime/manga recommendation.
+func (g *GeneralService) GetRecommendation(t string, id1 int, id2 int) (general.RecommendationData, int, string) {
+	var RecommendationModel general.RecommendationModel
+	return RecommendationModel.InitRecommendationModel(t, id1, id2)
+}
+
+// GetReview to get anime/manga review.
+func (g *GeneralService) GetReview(id int) (general.ReviewData, int, string) {
+	var ReviewModel general.ReviewModel
+	return ReviewModel.InitReviewModel(id)
+}

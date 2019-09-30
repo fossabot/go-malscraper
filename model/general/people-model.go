@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/grokify/html-strip-tags-go"
 	"github.com/rl404/go-malscraper/helper"
 	"github.com/rl404/go-malscraper/model"
-	"github.com/grokify/html-strip-tags-go"
 )
 
 // PeopleModel is an extended model from MainModel for people.
@@ -94,7 +94,7 @@ func (i *PeopleModel) GetBiodata(t string) (string, []string) {
 	bioRegex = strip.StripTags(bioRegex)
 
 	if bioRegex != "" {
-	 	splitBio := strings.Split(bioRegex, ": ")
+		splitBio := strings.Split(bioRegex, ": ")
 
 		splitBio[1] = strings.TrimSpace(splitBio[1])
 
@@ -151,15 +151,15 @@ func (i *PeopleModel) SetVa() {
 
 			animeCharacter = append(animeCharacter, AnimeCharacter{
 				Anime: IdImageTitle{
-					Id:		i.GetAnimeId(animeArea),
-					Image: 	i.GetAnimeImage(animeImageArea),
-					Title: 	i.GetAnimeTitle(animeArea),
+					Id:    i.GetAnimeId(animeArea),
+					Image: i.GetAnimeImage(animeImageArea),
+					Title: i.GetAnimeTitle(animeArea),
 				},
 				Character: Staff{
-					Id: 	i.GetAnimeId(charArea),
-					Name: 	i.GetAnimeTitle(charArea),
-					Role: 	i.GetAnimeRole(charArea),
-					Image: 	i.GetAnimeImage(charImageArea),
+					Id:    i.GetAnimeId(charArea),
+					Name:  i.GetAnimeTitle(charArea),
+					Role:  i.GetAnimeRole(charArea),
+					Image: i.GetAnimeImage(charImageArea),
 				},
 			})
 		})
@@ -212,15 +212,15 @@ func (i *PeopleModel) SetStaff(isManga bool) {
 			stArea := eachStaff.Find("td:nth-of-type(2)")
 
 			staffList = append(staffList, IdTitleImageRole{
-				Id: 	i.GetAnimeId(stArea),
-				Title:	i.GetAnimeTitle(stArea),
-				Image:	i.GetAnimeImage(animeImageArea),
-				Role:	i.GetStaffRole(stArea),
+				Id:    i.GetAnimeId(stArea),
+				Title: i.GetAnimeTitle(stArea),
+				Image: i.GetAnimeImage(animeImageArea),
+				Role:  i.GetStaffRole(stArea),
 			})
 
 		})
 
-		if (isManga) {
+		if isManga {
 			i.Data.PublishedManga = staffList
 		} else {
 			i.Data.Staff = staffList

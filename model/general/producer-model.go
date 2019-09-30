@@ -1,22 +1,22 @@
 package general
 
 import (
+	_ "fmt"
 	_ "regexp"
 	"strconv"
 	"strings"
-	_ "fmt"
 
 	"github.com/PuerkitoBio/goquery"
+	_ "github.com/grokify/html-strip-tags-go"
 	"github.com/rl404/go-malscraper/helper"
 	"github.com/rl404/go-malscraper/model"
-	_ "github.com/grokify/html-strip-tags-go"
 )
 
 // ProducerModel is an extended model from MainModel for studio/producer.
 type ProducerModel struct {
 	model.MainModel
-	T1 	 string
-	T2 	 string
+	T1   string
+	T2   string
 	Id   int
 	Page int
 	Data []ProducerData
@@ -50,7 +50,7 @@ func (i *ProducerModel) InitProducerModel(t1 string, t2 string, id int, page int
 	return i.Data, i.ResponseCode, i.ErrorMessage
 }
 
-// SetAllDetail to fill all people data.
+// SetAllDetail to fill all studio/producer/genre data.
 func (i *ProducerModel) SetAllDetail() {
 	var producerDataList []ProducerData
 
@@ -60,22 +60,22 @@ func (i *ProducerModel) SetAllDetail() {
 		infoArea := eachArea.Find(".information")
 
 		producerDataList = append(producerDataList, ProducerData{
-			Id: 			i.GetId(nameArea),
-			Image: 			i.GetImage(eachArea),
-			Title: 			i.GetTitle(nameArea),
-			Genre: 			i.GetGenre(eachArea),
-			Synopsis: 		i.GetSynopsis(eachArea),
-			Source: 		i.GetSource(producerArea),
-			Producer: 		i.GetProducer("anime", producerArea),
-			Author: 		i.GetProducer("manga", producerArea),
-			Episode:		i.GetEpisode("anime", producerArea),
-			Volumes:		i.GetEpisode("manga", producerArea),
-			Licensor: 		i.GetLicensor(eachArea),
-			Serialization:	i.GetSerialization(eachArea),
-			Type: 			i.GetType(infoArea),
-			AiringStart:	i.GetAiring(infoArea),
-			Member:			i.GetMember(infoArea),
-			Score:			i.GetScore(infoArea),
+			Id:            i.GetId(nameArea),
+			Image:         i.GetImage(eachArea),
+			Title:         i.GetTitle(nameArea),
+			Genre:         i.GetGenre(eachArea),
+			Synopsis:      i.GetSynopsis(eachArea),
+			Source:        i.GetSource(producerArea),
+			Producer:      i.GetProducer("anime", producerArea),
+			Author:        i.GetProducer("manga", producerArea),
+			Episode:       i.GetEpisode("anime", producerArea),
+			Volumes:       i.GetEpisode("manga", producerArea),
+			Licensor:      i.GetLicensor(eachArea),
+			Serialization: i.GetSerialization(eachArea),
+			Type:          i.GetType(infoArea),
+			AiringStart:   i.GetAiring(infoArea),
+			Member:        i.GetMember(infoArea),
+			Score:         i.GetScore(infoArea),
 		})
 	})
 
@@ -111,9 +111,9 @@ func (i *ProducerModel) GetGenre(eachArea *goquery.Selection) []IdTypeName {
 		splitLink := strings.Split(genreLink, "/")
 
 		genreList = append(genreList, IdTypeName{
-			Id: 	splitLink[3],
-			Type: 	splitLink[1],
-			Name: 	eachGenre.Text(),
+			Id:   splitLink[3],
+			Type: splitLink[1],
+			Name: eachGenre.Text(),
 		})
 	})
 
@@ -141,8 +141,8 @@ func (i *ProducerModel) GetProducer(t string, producerArea *goquery.Selection) [
 	producerArea = producerArea.Find("span.producer")
 	producerArea.Find("a").Each(func(j int, eachProducer *goquery.Selection) {
 		idNameList = append(idNameList, IdName{
-			Id: 	i.GetProducerId(eachProducer),
-			Name: 	i.GetProducerName(eachProducer),
+			Id:   i.GetProducerId(eachProducer),
+			Name: i.GetProducerName(eachProducer),
 		})
 	})
 
