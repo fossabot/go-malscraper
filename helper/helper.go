@@ -30,6 +30,7 @@ func ImageUrlCleaner(str string) string {
 func VideoUrlCleaner(str string) string {
 	r, _ := regexp.Compile(`\?.+`)
 	str = r.ReplaceAllString(str, "")
+	str = strings.Replace(str, "embed/", "watch?v=", -1)
 
 	return str
 }

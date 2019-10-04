@@ -10,9 +10,9 @@ func MalScraper() *MalService {
 
 // MalService for all go-malscraper service.
 type MalService struct {
-	User    	*service.UserService
-	General 	*service.GeneralService
-	Additional	*service.AdditionalService
+	User       *service.UserService
+	General    *service.GeneralService
+	Additional *service.AdditionalService
 	// Lists		*ListsService
 	// Search		*SearchService
 	// Seasonal		*SeasonalService

@@ -10,3 +10,9 @@ func (g *AdditionalService) GetStat(t string, id int) (additional.StatData, int,
 	var StatModel additional.StatModel
 	return StatModel.InitStatModel(t, id)
 }
+
+// GetVideo to get anime additional video list.
+func (g *AdditionalService) GetVideo(id int, p int) (additional.VideoData, int, string) {
+	var VideoModel additional.VideoModel
+	return VideoModel.InitVideoModel(id, p)
+}

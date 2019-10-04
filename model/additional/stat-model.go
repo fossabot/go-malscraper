@@ -3,7 +3,6 @@ package additional
 import (
 	"strconv"
 	"strings"
-	_ "fmt"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rl404/go-malscraper/helper"
@@ -77,9 +76,9 @@ func (i *StatModel) SetScore() {
 	if goquery.NodeName(scoreArea) == "table" {
 		scoreArea.Find("tr").Each(func(j int, eachScore *goquery.Selection) {
 			scoreList = append(scoreList, Score{
-				Type: 		i.GetScoreType(eachScore),
-				Vote:  		i.GetScoreVote(eachScore),
-				Percent: 	i.GetScorePercent(eachScore),
+				Type:    i.GetScoreType(eachScore),
+				Vote:    i.GetScoreVote(eachScore),
+				Percent: i.GetScorePercent(eachScore),
 			})
 		})
 	}
@@ -97,7 +96,7 @@ func (i *StatModel) GetScoreVote(eachScore *goquery.Selection) string {
 	vote := eachScore.Find("td:nth-of-type(2) span small").Text()
 	vote = strings.Replace(vote, " votes", "", -1)
 
-	return vote[1:len(vote)-1]
+	return vote[1 : len(vote)-1]
 }
 
 // GetScorePercent to get score percent.
@@ -123,14 +122,14 @@ func (i *StatModel) SetUser() {
 		usernameArea := eachUser.Find("td").First()
 
 		userList = append(userList, User{
-			Image: 		i.GetUserImage(usernameArea),
-			Username: 	i.GetUsername(usernameArea),
-			Score: 		i.GetUserScore(eachUser),
-			Status: 	i.GetUserStatus(eachUser),
-			Episode: 	i.GetUserProgress(eachUser, "anime", "4"),
-			Volume: 	i.GetUserProgress(eachUser, "manga", "4"),
-			Chapter: 	i.GetUserProgress(eachUser, "manga", "5"),
-			Date: 		i.GetUserDate(eachUser),
+			Image:    i.GetUserImage(usernameArea),
+			Username: i.GetUsername(usernameArea),
+			Score:    i.GetUserScore(eachUser),
+			Status:   i.GetUserStatus(eachUser),
+			Episode:  i.GetUserProgress(eachUser, "anime", "4"),
+			Volume:   i.GetUserProgress(eachUser, "manga", "4"),
+			Chapter:  i.GetUserProgress(eachUser, "manga", "5"),
+			Date:     i.GetUserDate(eachUser),
 		})
 
 		return true
@@ -142,7 +141,7 @@ func (i *StatModel) SetUser() {
 // GetUserImage to get user image.
 func (i *StatModel) GetUserImage(usernameArea *goquery.Selection) string {
 	image, _ := usernameArea.Find("a").Attr("style")
-	return helper.ImageUrlCleaner(image[21:len(image)-1])
+	return helper.ImageUrlCleaner(image[21 : len(image)-1])
 }
 
 // GetUesrname to get user username.
@@ -163,10 +162,10 @@ func (i *StatModel) GetUserStatus(eachUser *goquery.Selection) string {
 // GetUserProgress to get user progress.
 func (i *StatModel) GetUserProgress(eachUser *goquery.Selection, t string, cnt string) string {
 	if i.Type != t {
- 		return ""
+		return ""
 	}
 
-	progress := eachUser.Find("td:nth-of-type("+cnt+")").Text()
+	progress := eachUser.Find("td:nth-of-type(" + cnt + ")").Text()
 	return strings.TrimSpace(progress)
 }
 

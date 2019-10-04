@@ -2,26 +2,45 @@ package additional
 
 // StatData for main anime & manga statistics data model.
 type StatData struct {
-	Summary 	map[string]string	`json:"summary"`
-	Score 		[]Score 			`json:"score"`
-	User 		[]User 				`json:"user"`
+	Summary map[string]string `json:"summary"`
+	Score   []Score           `json:"score"`
+	User    []User            `json:"user"`
 }
 
 // Score is a model for anime/manga score.
 type Score struct {
-	Type 	 	string 		`json:"type"`
-	Vote 		string 		`json:"vote"`
-	Percent 	string 		`json:"percent"`
+	Type    string `json:"type"`
+	Vote    string `json:"vote"`
+	Percent string `json:"percent"`
 }
 
 // User is a model for user in StatData model.
 type User struct {
- 	Image 		string 		`json:"image"`
- 	Username 	string 		`json:"username"`
- 	Score 		string 		`json:"score"`
- 	Status 		string 		`json:"status"`
- 	Episode 	string 		`json:"episode"`
- 	Volume 		string 		`json:"volume"` 	// manga
- 	Chapter 	string 		`json:"chapter"` 	// manga
- 	Date 		string 		`json:"date"`
+	Image    string `json:"image"`
+	Username string `json:"username"`
+	Score    string `json:"score"`
+	Status   string `json:"status"`
+	Episode  string `json:"episode"`
+	Volume   string `json:"volume"`  // manga
+	Chapter  string `json:"chapter"` // manga
+	Date     string `json:"date"`
+}
+
+// VideoData for main anime additional video data model.
+type VideoData struct {
+	Episode   []Episode   `json:"episode"`
+	Promotion []Promotion `json:"promotion"`
+}
+
+// Episode is a model for episode video in VideoData.
+type Episode struct {
+	Episode string `json:"episode"`
+	Title   string `json:"title"`
+	Link    string `json:"link"`
+}
+
+// Promotion is a model for promotion video in VideoData.
+type Promotion struct {
+	Title string `json:"title"`
+	Link  string `json:"link"`
 }
