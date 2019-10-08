@@ -16,3 +16,9 @@ func (g *AdditionalService) GetVideo(id int, p int) (additional.VideoData, int, 
 	var VideoModel additional.VideoModel
 	return VideoModel.InitVideoModel(id, p)
 }
+
+// GetCharacterStaff to get anime/manga additional staff+character list.
+func (g *AdditionalService) GetCharacterStaff(t string, id int) (additional.CharacterStaffData, int, string) {
+	var CharacterStaffModel additional.CharacterStaffModel
+	return CharacterStaffModel.InitCharacterStaffModel(t, id)
+}

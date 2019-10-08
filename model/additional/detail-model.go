@@ -44,3 +44,26 @@ type Promotion struct {
 	Title string `json:"title"`
 	Link  string `json:"link"`
 }
+
+// CharacterStaffData for main anime/manga additional character+staff list.
+type CharacterStaffData struct {
+	Character []Character `json:"character"`
+	Staff     []Staff     `json:"staff"`
+}
+
+// Character is a model for character in CharacterStaffData.
+type Character struct {
+	Id    string  `json:"id"`
+	Image string  `json:"image"`
+	Name  string  `json:"name"`
+	Role  string  `json:"role"`
+	Va    []Staff `json:"va"`
+}
+
+// Staff is a common model with id, name, role, and image.
+type Staff struct {
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Role  string `json:"role"`
+	Image string `json:"image"`
+}
