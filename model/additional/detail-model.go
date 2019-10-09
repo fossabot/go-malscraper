@@ -67,3 +67,12 @@ type Staff struct {
 	Role  string `json:"role"`
 	Image string `json:"image"`
 }
+
+// EpisodeData for main anime additional episode list.
+type EpisodeData struct {
+	Episode       string `json:"episode"`
+	Link          string `json:"link"`
+	Title         string `json:"title"`
+	JapaneseTitle string `json:"japanese_title"`
+	Aired         string `json:"aired"`
+}

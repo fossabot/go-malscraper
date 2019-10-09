@@ -22,3 +22,27 @@ func (g *AdditionalService) GetCharacterStaff(t string, id int) (additional.Char
 	var CharacterStaffModel additional.CharacterStaffModel
 	return CharacterStaffModel.InitCharacterStaffModel(t, id)
 }
+
+// GetPicture to get anime/manga additional picture list.
+func (g *AdditionalService) GetPicture(t string, id int) ([]string, int, string) {
+	var PictureModel additional.PictureModel
+	return PictureModel.InitPictureModel(t, id)
+}
+
+// GetCharacterPicture to get character additional picture list.
+func (g *AdditionalService) GetCharacterPicture(id int) ([]string, int, string) {
+	var CharacterPictureModel additional.CharacterPeoplePictureModel
+	return CharacterPictureModel.InitCharacterPeoplePictureModel("character", id)
+}
+
+// GetPeoplePicture to get people additional picture list.
+func (g *AdditionalService) GetPeoplePicture(id int) ([]string, int, string) {
+	var PeoplePictureModel additional.CharacterPeoplePictureModel
+	return PeoplePictureModel.InitCharacterPeoplePictureModel("people", id)
+}
+
+// GetEpisode to get anime additional episode list.
+func (g *AdditionalService) GetEpisode(id int, p int) ([]additional.EpisodeData, int, string) {
+	var EpisodeModel additional.EpisodeModel
+	return EpisodeModel.InitEpisodeModel(id, p)
+}
