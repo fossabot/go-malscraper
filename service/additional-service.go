@@ -46,3 +46,15 @@ func (g *AdditionalService) GetEpisode(id int, p int) ([]additional.EpisodeData,
 	var EpisodeModel additional.EpisodeModel
 	return EpisodeModel.InitEpisodeModel(id, p)
 }
+
+// GetAnimeReview to get anime additional review list.
+func (g *AdditionalService) GetAnimeReview(id int, p int) ([]additional.ReviewData, int, string) {
+	var ReviewModel additional.ReviewModel
+	return ReviewModel.InitReviewModel("anime", id, p)
+}
+
+// GetMangaReview to get manga additional review list.
+func (g *AdditionalService) GetMangaReview(id int, p int) ([]additional.ReviewData, int, string) {
+	var ReviewModel additional.ReviewModel
+	return ReviewModel.InitReviewModel("manga", id, p)
+}

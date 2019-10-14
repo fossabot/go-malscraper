@@ -76,3 +76,22 @@ type EpisodeData struct {
 	JapaneseTitle string `json:"japanese_title"`
 	Aired         string `json:"aired"`
 }
+
+// ReviewData for main anime/manga additional review list.
+type ReviewData struct {
+	Id       string            `json:"id"`
+	Username string            `json:"username"`
+	Image    string            `json:"image"`
+	Helpful  string            `json:"helpful"`
+	Date     DateTime          `json:"date"`
+	Episode  string            `json:"episode"`
+	Chapter  string            `json:"chapter"` // manga
+	Score    map[string]string `json:"score"`
+	Review   string            `json:"review"`
+}
+
+// DateTime is common model for date and time.
+type DateTime struct {
+	Date string `json:"date"`
+	Time string `json:"time"`
+}
