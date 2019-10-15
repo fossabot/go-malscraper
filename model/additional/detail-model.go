@@ -95,3 +95,19 @@ type DateTime struct {
 	Date string `json:"date"`
 	Time string `json:"time"`
 }
+
+// RecommendationData for main anime/manga additional recommendation list.
+type RecommendationData struct {
+	Id             string       `json:"id"`
+	Title          string       `json:"title"`
+	Image          string       `json:"image"`
+	Username       string       `json:"username"`
+	Recommendation string       `json:"recommendation"`
+	Other          []OtherRecom `json:"other"`
+}
+
+// OtherRecom is simple modal for other recommandation.
+type OtherRecom struct {
+	Username       string `json:"username"`
+	Recommendation string `json:"recommendation"`
+}
