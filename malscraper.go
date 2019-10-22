@@ -13,7 +13,7 @@ type MalService struct {
 	User       *service.UserService
 	General    *service.GeneralService
 	Additional *service.AdditionalService
-	// Lists		*ListsService
+	Lists      *service.ListsService
 	// Search		*SearchService
 	// Seasonal		*SeasonalService
 	// Top			*TopService
