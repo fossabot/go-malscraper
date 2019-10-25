@@ -28,3 +28,9 @@ func (l *ListsService) GetAllMagazine() ([]list.ProducerData, int, string) {
 	var magazineModel list.ProducerModel
 	return magazineModel.InitProducerModel("manga")
 }
+
+// GetAllReview to get all anime/manga review.
+func (l *ListsService) GetAllReview(t string, p int) ([]list.ReviewData, int, string) {
+	var reviewModel list.ReviewModel
+	return reviewModel.InitReviewModel(t, p)
+}

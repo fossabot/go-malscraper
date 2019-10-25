@@ -569,6 +569,9 @@ func (i *InfoModel) GetReviewContent(bottomArea *goquery.Selection) string {
 	r, _ := regexp.Compile(`[^\S\r\n]+`)
 	reviewContent := r.ReplaceAllString(bottomArea.Text(), " ")
 
+	r, _ = regexp.Compile(`(\n\n \n)`)
+	reviewContent = r.ReplaceAllString(reviewContent, "")
+
 	return strings.TrimSpace(reviewContent)
 }
 
