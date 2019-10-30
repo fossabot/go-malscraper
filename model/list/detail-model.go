@@ -14,7 +14,7 @@ type ProducerData struct {
 	Count string `json:"count"`
 }
 
-//
+// ReviewData for main anime & manga review data model.
 type ReviewData struct {
 	Id       string            `json:"id"`
 	Source   ReviewSource      `json:"source"`
@@ -40,4 +40,26 @@ type ReviewSource struct {
 type DateTime struct {
 	Date string `json:"date"`
 	Time string `json:"time"`
+}
+
+// RecommendationData for main anime & manga recommendation data model.
+type RecommendationData struct {
+	Username       string `json:"username"`
+	Date           string `json:"date"`
+	Source         Source `json:"source"`
+	Recommendation string `json:"recommendation"`
+}
+
+// Source is recommendation source model.
+type Source struct {
+	Liked          IdTitleTypeImage `json:"liked"`
+	Recommendation IdTitleTypeImage `json:"recommendation"`
+}
+
+// IdTitleTypeImage is common model for source.
+type IdTitleTypeImage struct {
+	Id    string `json:"id"`
+	Title string `json:"title"`
+	Type  string `json:"type"`
+	Image string `json:"image"`
 }

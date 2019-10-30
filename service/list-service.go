@@ -34,3 +34,9 @@ func (l *ListsService) GetAllReview(t string, p int) ([]list.ReviewData, int, st
 	var reviewModel list.ReviewModel
 	return reviewModel.InitReviewModel(t, p)
 }
+
+// GetAllRecommendation to get all anime/manga recommendation.
+func (l *ListsService) GetAllRecommendation(t string, p int) ([]list.RecommendationData, int, string) {
+	var recommendationModel list.RecommendationModel
+	return recommendationModel.InitRecommendationModel(t, p)
+}
