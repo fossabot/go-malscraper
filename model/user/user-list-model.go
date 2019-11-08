@@ -55,7 +55,11 @@ func (u *UserListModel) SetAllDetail() {
 			return
 		}
 
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			u.SetMessage(500, err.Error())
+			return
+		}
 
 		var dataListTmp []UserListData
 		err = json.Unmarshal(body, &dataListTmp)
