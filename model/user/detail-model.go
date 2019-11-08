@@ -119,3 +119,62 @@ type FavPeople struct {
 	Image string `json:"image"`
 	Name  string `json:"name"`
 }
+
+// UserListData for main user anime/manga list model.
+type UserListData struct {
+	Status            int      `json:"status"`
+	Score             int      `json:"score"`
+	Tags              string   `json:"tags"`
+	IsRewatching      int      `json:"is_rewatching"`
+	WatchedEpisode    int      `json:"num_watched_episodes"`
+	AnimeTitle        string   `json:"anime_title"`
+	AnimeEpisode      int      `json:"anime_num_episodes"`
+	AnimeAiringStatus int      `json:"anime_airing_status"`
+	AnimeId           int      `json:"anime_id"`
+	AnimeStudio       []IdName `json:"anime_studios"`
+	AnimeLicensor     []IdName `json:"anime_licensors"`
+	AnimeSeason       Season   `json:"anime_season"`
+	HasEpisodeVideo   bool     `json:"has_episode_video"`
+	HasPromotionVideo bool     `json:"has_promotion_video"`
+	HasVideo          bool     `json:"has_video"`
+	VideoUrl          string   `json:"video_url"`
+	AnimeUrl          string   `json:"anime_url"`
+	AnimeImage        string   `json:"anime_image_path"`
+	AnimeType         string   `json:"anime_media_type_string"`
+	AnimeRating       string   `json:"anime_mpaa_rating_string"`
+	AnimeStartDate    string   `json:"anime_start_date_string"`
+	AnimeEndDate      string   `json:"anime_end_date_string"`
+	IsRereading       int      `json:"is_rereading"`            // manga
+	ReadChapter       int      `json:"num_read_chapters"`       // manga
+	ReadVolume        int      `json:"num_read_volumes"`        // manga
+	MangaTitle        string   `json:"manga_title"`             // manga
+	MangaChapter      int      `json:"manga_num_chapters"`      // manga
+	MangaVolume       int      `json:"manga_num_volume"`        // manga
+	MangaStatus       int      `json:"manga_publishing_status"` // manga
+	MangaId           int      `json:"manga_id"`                // manga
+	MangaMagazine     []IdName `json:"manga_magazines"`         // manga
+	MangaUrl          string   `json:"manga_url"`               // manga
+	MangaImage        string   `json:"manga_image"`             // manga
+	MangaType         string   `json:"manga_media_type_string"` // manga
+	MangaStartDate    string   `json:"manga_start_date_string"` // manga
+	MangaEndDate      string   `json:"manga_end_date_string"`   // manga
+	Retail            string   `json:"retail_string"`           // manga
+	IsAddedToList     bool     `json:"is_added_to_list"`
+	StartDate         string   `json:"start_date_string"`
+	FinishDate        string   `json:"finish_date_string"`
+	Day               int      `json:"days_string"`
+	Storage           string   `json:"storage_string"`
+	Priority          string   `json:"priority_string"`
+}
+
+// IdName is common model contains id and name.
+type IdName struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Season is season model contains year and season.
+type Season struct {
+	Year   int    `json:"year"`
+	Season string `json:"season"`
+}

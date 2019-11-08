@@ -10,3 +10,9 @@ func (u *UserService) GetUser(username string) (user.UserData, int, string) {
 	var userModel user.UserModel
 	return userModel.InitUserModel(username)
 }
+
+// GetUserList to get user anime/manga list.
+func (u *UserService) GetUserList(username string, typ string, status int) ([]user.UserListData, int, string) {
+	var userListModel user.UserListModel
+	return userListModel.InitUserListModel(username, typ, status)
+}
