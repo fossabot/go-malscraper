@@ -11,6 +11,18 @@ func (u *UserService) GetUser(username string) (user.UserData, int, string) {
 	return userModel.InitUserModel(username)
 }
 
+// GetUserFriend to get user friend list.
+func (u *UserService) GetUserFriend(username string, page int) ([]user.UserFriendData, int, string) {
+	var userFriendModel user.UserFriendModel
+	return userFriendModel.InitUserFriendModel(username, page)
+}
+
+// GetUserHistory to get user history list.
+func (u *UserService) GetUserHistory(username string, t string) ([]user.UserHistoryData, int, string) {
+	var userHistoryModel user.UserHistoryModel
+	return userHistoryModel.InitUserHistoryModel(username, t)
+}
+
 // GetUserList to get user anime/manga list.
 func (u *UserService) GetUserList(username string, typ string, status int) ([]user.UserListData, int, string) {
 	var userListModel user.UserListModel

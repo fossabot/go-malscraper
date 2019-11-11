@@ -120,6 +120,23 @@ type FavPeople struct {
 	Name  string `json:"name"`
 }
 
+// UserFriendData for main user friend list model.
+type UserFriendData struct {
+	Image       string `json:"image"`
+	Name        string `json:"name"`
+	LastOnline  string `json:"last_online"`
+	FriendSince string `json:"friend_since"`
+}
+
+// UserHistoryData for main user history list model.
+type UserHistoryData struct {
+	Id       string `json:"id"`
+	Title    string `json:"title"`
+	Type     string `json:"type"`
+	Progress string `json:"progress"`
+	Date     string `json:"date"`
+}
+
 // UserListData for main user anime/manga list model.
 // TODO: Handle dynamic (dirty) data type
 type UserListData struct {
