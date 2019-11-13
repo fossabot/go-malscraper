@@ -27,3 +27,10 @@ type IdTitle struct {
 	Id    string `json:"id"`
 	Title string `json:"title"`
 }
+
+// SearchUserData for main user search data model.
+type SearchUserData struct {
+	Name       string `json:"name"`
+	Image      string `json:"image"`
+	LastOnline string `json:"last_online"`
+}

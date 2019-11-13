@@ -28,3 +28,9 @@ func (u *SearchService) SearchPeople(query string, page int) ([]search.SearchCha
 	var searchModel search.SearchCharPeopleModel
 	return searchModel.InitSearchCharPeopleModel("people", query, page)
 }
+
+// SearchUser to get user search result list.
+func (u *SearchService) SearchUser(query string, page int) ([]search.SearchUserData, int, string) {
+	var searchModel search.SearchUserModel
+	return searchModel.InitSearchUserModel(query, page)
+}
