@@ -15,6 +15,6 @@ type MalService struct {
 	Additional *service.AdditionalService
 	Lists      *service.ListsService
 	Search     *service.SearchService
-	// Seasonal		*SeasonalService
+	Season     *service.SeasonService
 	// Top			*TopService
 }

@@ -2,7 +2,9 @@ package helper
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // ImageUrlCleaner to clean dirty image url.
@@ -44,4 +46,29 @@ func ArrayFilter(s []string) []string {
 		}
 	}
 	return r
+}
+
+// InArray to get if value is in array.
+func InArray(arr []string, v string) bool {
+	for _, a := range arr {
+		if a == v {
+			return true
+		}
+	}
+	return false
+}
+
+// GetCurrentSeason to get current season (spring, summer, fall, winter)
+func GetCurrentSeason() string {
+	currentMonth, _ := strconv.Atoi(time.Now().Format("1"))
+	switch {
+	case currentMonth >= 1 && currentMonth < 4:
+		return "winter"
+	case currentMonth >= 4 && currentMonth < 7:
+		return "spring"
+	case currentMonth >= 7 && currentMonth < 10:
+		return "summer"
+	default:
+		return "fall"
+	}
 }
