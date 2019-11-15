@@ -16,3 +16,9 @@ func (t *TopService) GetTopManga(typ int, page int) ([]top.TopAnimeMangaData, in
 	var topModel top.TopAnimeMangaModel
 	return topModel.InitTopAnimeMangaModel("manga", typ, page)
 }
+
+// GetTopCharacter to get top character list.
+func (t *TopService) GetTopCharacter(page int) ([]top.TopCharacterData, int, string) {
+	var topModel top.TopCharacterModel
+	return topModel.InitTopCharacterModel(page)
+}

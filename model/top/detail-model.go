@@ -14,3 +14,21 @@ type TopAnimeMangaData struct {
 	Member    string `json:"member"`
 	Score     string `json:"score"`
 }
+
+// TopCharacterData for main top character data model.
+type TopCharacterData struct {
+	Rank         string    `json:"rank"`
+	Id           string    `json:"id"`
+	Name         string    `json:"name"`
+	JapaneseName string    `json:"japanese_name"`
+	Image        string    `json:"image"`
+	Animeography []IdTitle `json:"animeography"`
+	Mangaography []IdTitle `json:"mangaography"`
+	Favorite     string    `json:"favorite"`
+}
+
+// IdTitle is common model contain id and title.
+type IdTitle struct {
+	Id    string `json:"id"`
+	Title string `json:"title"`
+}
