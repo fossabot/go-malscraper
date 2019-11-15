@@ -72,3 +72,13 @@ func GetCurrentSeason() string {
 		return "fall"
 	}
 }
+
+// GetTopAnimeType to get top anime type string.
+func GetTopAnimeType() []string {
+	return []string{"", "airing", "upcoming", "tv", "movie", "ova", "special", "bypopularity", "favorite"}
+}
+
+// GetTopMangaType to get top manga type string.
+func GetTopMangaType() []string {
+	return []string{"", "manga", "novel", "oneshots", "doujin", "manhwa", "manhua", "bypopularity", "favorite"}
+}
