@@ -32,3 +32,14 @@ type IdTitle struct {
 	Id    string `json:"id"`
 	Title string `json:"title"`
 }
+
+// TopPeopleData for main top people data model.
+type TopPeopleData struct {
+	Rank         string `json:"rank"`
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	JapaneseName string `json:"japanese_name"`
+	Image        string `json:"image"`
+	Birthday     string `json:"birthday"`
+	Favorite     string `json:"favorite"`
+}

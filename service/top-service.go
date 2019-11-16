@@ -22,3 +22,9 @@ func (t *TopService) GetTopCharacter(page int) ([]top.TopCharacterData, int, str
 	var topModel top.TopCharacterModel
 	return topModel.InitTopCharacterModel(page)
 }
+
+// GetTopPeople to get top people list.
+func (t *TopService) GetTopPeople(page int) ([]top.TopPeopleData, int, string) {
+	var topModel top.TopPeopleModel
+	return topModel.InitTopPeopleModel(page)
+}
