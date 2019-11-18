@@ -1,8 +1,6 @@
 package user
 
 import (
-	_ "fmt"
-	_ "reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,12 +22,6 @@ func (u *UserModel) InitUserModel(user string) (UserData, int, string) {
 	u.User = user
 	u.InitModel("/profile/"+u.User, "#content")
 
-	// value, err := helper.GetFromCache(u.Url)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(reflect.TypeOf(value), value)
-
 	u.Parser = u.GetParser(u.Url)
 
 	if u.ResponseCode != 200 {
@@ -37,7 +29,6 @@ func (u *UserModel) InitUserModel(user string) (UserData, int, string) {
 	}
 
 	u.SetAllDetail()
-	u.IsCached = false
 
 	return u.Data, u.ResponseCode, u.ErrorMessage
 }
@@ -54,8 +45,6 @@ func (u *UserModel) SetAllDetail() {
 	u.SetStatistic("anime")
 	u.SetStatistic("manga")
 	u.SetFavorite()
-
-	// helper.SaveToCache(u.Url, u.Data)
 }
 
 // SetUsername to set username.
@@ -65,8 +54,7 @@ func (u *UserModel) SetUsername() {
 
 // SetImage to set user image.
 func (u *UserModel) SetImage() {
-	image := u.Parser.Find(".container-left .user-profile")
-	image = image.Find(".user-image img")
+	image := u.Parser.Find(".container-left .user-profile .user-image img")
 	imageSrc, _ := image.Attr("src")
 	u.Data.Image = helper.ImageUrlCleaner(imageSrc)
 }
@@ -92,11 +80,11 @@ func (u *UserModel) SetStatus() {
 func (u *UserModel) SetMoreStatus() {
 	statusArea := u.Parser.Find(".container-left .user-profile .user-status:nth-of-type(3)")
 
-	u.Data.ForumPost = statusArea.Find("li:nth-of-type(1)").Find("span:nth-of-type(2)").Text()
-	u.Data.Review = statusArea.Find("li:nth-of-type(2)").Find("span:nth-of-type(2)").Text()
-	u.Data.Recommendation = statusArea.Find("li:nth-of-type(3)").Find("span:nth-of-type(2)").Text()
-	u.Data.BlogPost = statusArea.Find("li:nth-of-type(4)").Find("span:nth-of-type(2)").Text()
-	u.Data.Club = statusArea.Find("li:nth-of-type(5)").Find("span:nth-of-type(2)").Text()
+	u.Data.ForumPost, _ = strconv.Atoi(statusArea.Find("li:nth-of-type(1)").Find("span:nth-of-type(2)").Text())
+	u.Data.Review, _ = strconv.Atoi(statusArea.Find("li:nth-of-type(2)").Find("span:nth-of-type(2)").Text())
+	u.Data.Recommendation, _ = strconv.Atoi(statusArea.Find("li:nth-of-type(3)").Find("span:nth-of-type(2)").Text())
+	u.Data.BlogPost, _ = strconv.Atoi(statusArea.Find("li:nth-of-type(4)").Find("span:nth-of-type(2)").Text())
+	u.Data.Club, _ = strconv.Atoi(statusArea.Find("li:nth-of-type(5)").Find("span:nth-of-type(2)").Text())
 }
 
 // SetSns to set user sns.
@@ -120,18 +108,19 @@ func (u *UserModel) SetFriend() {
 	friendCount = r.FindString(friendCount)
 	friendCount = strings.Replace(friendCount, "(", "", -1)
 	friendCount = strings.Replace(friendCount, ")", "", -1)
-	u.Data.Friend.Count = friendCount
+	u.Data.Friend.Count, _ = strconv.Atoi(friendCount)
 
+	var friendList []FriendData
 	friendArea.Find("a").Each(func(i int, eachFriend *goquery.Selection) {
-		var tempFriend FriendData
-
 		friendImage, _ := eachFriend.Attr("data-bg")
 
-		tempFriend.Name = eachFriend.Text()
-		tempFriend.Image = helper.ImageUrlCleaner(friendImage)
-
-		u.Data.Friend.Data = append(u.Data.Friend.Data, tempFriend)
+		friendList = append(friendList, FriendData{
+			Name:  eachFriend.Text(),
+			Image: helper.ImageUrlCleaner(friendImage),
+		})
 	})
+
+	u.Data.Friend.Data = friendList
 }
 
 // SetAbout to set user about-me.
@@ -166,10 +155,12 @@ func (u *UserModel) SetStatistic(t string) {
 }
 
 // GetDaysScore to get days & score for anime & manga statistic.
-func (u *UserModel) GetDaysScore(scoreArea *goquery.Selection, nth int) string {
+func (u *UserModel) GetDaysScore(scoreArea *goquery.Selection, nth int) float64 {
 	area := scoreArea.Find("div:nth-of-type(" + strconv.Itoa(nth) + ")")
 	tempArea := area.Find("span")
-	return strings.Replace(area.Text(), tempArea.Text(), "", -1)
+	dayScoreStr := strings.Replace(area.Text(), tempArea.Text(), "", -1)
+	dayScoreFloat, _ := strconv.ParseFloat(dayScoreStr, 64)
+	return dayScoreFloat
 }
 
 // GetStatStatus to get anime & manga progress.
@@ -177,7 +168,7 @@ func (u *UserModel) GetStatStatus(statArea *goquery.Selection, t string) (AnimeS
 	var animeStatus AnimeStatus
 	var mangaStatus MangaStatus
 
-	statStatus := make(map[string]string)
+	statStatus := make(map[string]int)
 
 	aStatArea := statArea.Find("ul.stats-status")
 	bStatArea := statArea.Find("ul.stats-data")
@@ -211,9 +202,11 @@ func (u *UserModel) GetStatStatus(statArea *goquery.Selection, t string) (AnimeS
 }
 
 // GetStatStatusCount to get anime & manga progress count.
-func (u *UserModel) GetStatStatusCount(aStatArea *goquery.Selection, liNo int, spanNo int) string {
+func (u *UserModel) GetStatStatusCount(aStatArea *goquery.Selection, liNo int, spanNo int) int {
 	countStat := aStatArea.Find("li:nth-of-type(" + strconv.Itoa(liNo) + ") span:nth-of-type(" + strconv.Itoa(spanNo) + ")").Text()
-	return strings.Replace(countStat, ",", "", -1)
+	countStat = strings.Replace(countStat, ",", "", -1)
+	countStatInt, _ := strconv.Atoi(countStat)
+	return countStatInt
 }
 
 // GetHistory to get anime & manga progress history.
@@ -221,20 +214,18 @@ func (u *UserModel) GetHistory(rightArea *goquery.Selection, t string) []History
 	var history []History
 	historyArea := rightArea.Find("div.updates." + t)
 	historyArea.Find(".statistics-updates").Each(func(i int, eachHistory *goquery.Selection) {
-		var tempHistory History
-
 		historyDataArea := eachHistory.Find(".data")
 		historyProgress := u.GetHistoryProgress(historyDataArea)
 
-		tempHistory.Image = u.GetHistoryImage(eachHistory)
-		tempHistory.Id = u.GetHistoryId(historyDataArea)
-		tempHistory.Title = u.GetHistoryTitle(historyDataArea)
-		tempHistory.Date = u.GetHistoryDate(historyDataArea)
-		tempHistory.Progress = historyProgress["progress"]
-		tempHistory.Score = historyProgress["score"]
-		tempHistory.Status = historyProgress["status"]
-
-		history = append(history, tempHistory)
+		history = append(history, History{
+			Image:    u.GetHistoryImage(eachHistory),
+			Id:       u.GetHistoryId(historyDataArea),
+			Title:    u.GetHistoryTitle(historyDataArea),
+			Date:     u.GetHistoryDate(historyDataArea),
+			Progress: historyProgress["progress"].(string),
+			Score:    historyProgress["score"].(int),
+			Status:   historyProgress["status"].(string),
+		})
 	})
 	return history
 }
@@ -247,11 +238,12 @@ func (u *UserModel) GetHistoryImage(eachHistory *goquery.Selection) string {
 }
 
 // GetHistoryId to get anime & manga history id.
-func (u *UserModel) GetHistoryId(historyDataArea *goquery.Selection) string {
+func (u *UserModel) GetHistoryId(historyDataArea *goquery.Selection) int {
 	dataId := historyDataArea.Find("a")
 	hrefId, _ := dataId.Attr("href")
 	id := strings.Split(hrefId, "/")
-	return id[4]
+	idInt, _ := strconv.Atoi(id[4])
+	return idInt
 }
 
 // GetHistoryTitle to get anime & manga history title.
@@ -268,8 +260,8 @@ func (u *UserModel) GetHistoryDate(historyDataArea *goquery.Selection) string {
 }
 
 // GetHistoryProgress to get anime & manga history progress.
-func (u *UserModel) GetHistoryProgress(historyDataArea *goquery.Selection) map[string]string {
-	tempHistory := make(map[string]string)
+func (u *UserModel) GetHistoryProgress(historyDataArea *goquery.Selection) map[string]interface{} {
+	tempHistory := make(map[string]interface{})
 
 	progress := historyDataArea.Find(".graph-content").Next().Text()
 
@@ -287,7 +279,12 @@ func (u *UserModel) GetHistoryProgress(historyDataArea *goquery.Selection) map[s
 		tempHistory["progress"] = progressSplit2[1]
 	}
 
-	tempHistory["score"] = strings.TrimSpace(strings.Replace(progressSplit[1], "Scored", "", -1))
+	scoreStr := strings.TrimSpace(strings.Replace(progressSplit[1], "Scored", "", -1))
+	if scoreStr == "-" {
+		scoreStr = "0"
+	}
+
+	tempHistory["score"], _ = strconv.Atoi(scoreStr)
 
 	return tempHistory
 }
@@ -317,8 +314,8 @@ func (u *UserModel) GetFavList(favoriteArea *goquery.Selection, t string) ([]Fav
 					Id:    u.GetFavId(eachFavorite),
 					Image: u.GetFavImage(eachFavorite),
 					Title: u.GetFavTitle(eachFavorite),
-					Type:  u.GetFavTypeYear(eachFavorite, 0),
-					Year:  u.GetFavTypeYear(eachFavorite, 1),
+					Type:  u.GetFavTypeYear(eachFavorite, 0).(string),
+					Year:  u.GetFavTypeYear(eachFavorite, 1).(int),
 				})
 			} else {
 				if t == "characters" {
@@ -326,9 +323,9 @@ func (u *UserModel) GetFavList(favoriteArea *goquery.Selection, t string) ([]Fav
 						Id:         u.GetFavId(eachFavorite),
 						Image:      u.GetFavImage(eachFavorite),
 						Name:       u.GetFavTitle2(eachFavorite),
-						MediaId:    u.GetFavMedia(eachFavorite, 2),
+						MediaId:    u.GetFavMedia(eachFavorite, 2).(int),
 						MediaTitle: u.GetFavMediaTitle(eachFavorite),
-						MediaType:  u.GetFavMedia(eachFavorite, 1),
+						MediaType:  u.GetFavMedia(eachFavorite, 1).(string),
 					})
 				} else {
 					favPeople = append(favPeople, FavPeople{
@@ -346,8 +343,7 @@ func (u *UserModel) GetFavList(favoriteArea *goquery.Selection, t string) ([]Fav
 
 // GetFavImage to get favorite image.
 func (u *UserModel) GetFavImage(eachFavorite *goquery.Selection) string {
-	imageArea := eachFavorite.Find("a")
-	imageStyle, _ := imageArea.Attr("style")
+	imageStyle, _ := eachFavorite.Find("a").Attr("style")
 
 	r, _ := regexp.Compile(`\'([^\'])*`)
 	imageUrl := r.FindString(imageStyle)
@@ -356,11 +352,11 @@ func (u *UserModel) GetFavImage(eachFavorite *goquery.Selection) string {
 }
 
 // GetFavId to get favorite id.
-func (u *UserModel) GetFavId(eachFavorite *goquery.Selection) string {
-	idArea := eachFavorite.Find("a")
-	hrefId, _ := idArea.Attr("href")
+func (u *UserModel) GetFavId(eachFavorite *goquery.Selection) int {
+	hrefId, _ := eachFavorite.Find("a").Attr("href")
 	id := strings.Split(hrefId, "/")
-	return id[4]
+	idInt, _ := strconv.Atoi(id[4])
+	return idInt
 }
 
 // GetFavTitle to get favorite title.
@@ -369,10 +365,15 @@ func (u *UserModel) GetFavTitle(eachFavorite *goquery.Selection) string {
 }
 
 // GetFavTypeYear to get favorite type and year.
-func (u *UserModel) GetFavTypeYear(eachFavorite *goquery.Selection, i int) string {
+func (u *UserModel) GetFavTypeYear(eachFavorite *goquery.Selection, i int) interface{} {
 	tempType := eachFavorite.Find("span").Text()
 	favType := strings.Split(tempType, "·")
-	return strings.TrimSpace(favType[i])
+	typeYear := strings.TrimSpace(favType[i])
+	if i == 1 {
+		year, _ := strconv.Atoi(typeYear)
+		return year
+	}
+	return typeYear
 }
 
 // GetFavTitle2 to get favorite character name.
@@ -383,10 +384,13 @@ func (u *UserModel) GetFavTitle2(eachFavorite *goquery.Selection) string {
 }
 
 // GetFavMedia to get favorite anime & manga id and type.
-func (u *UserModel) GetFavMedia(eachFavorite *goquery.Selection, i int) string {
-	tempMedia := eachFavorite.Find(".data .fn-grey2 a")
-	mediaHref, _ := tempMedia.Attr("href")
+func (u *UserModel) GetFavMedia(eachFavorite *goquery.Selection, i int) interface{} {
+	mediaHref, _ := eachFavorite.Find(".data .fn-grey2 a").Attr("href")
 	favMedia := strings.Split(mediaHref, "/")
+	if i == 2 {
+		favId, _ := strconv.Atoi(favMedia[i])
+		return favId
+	}
 	return favMedia[i]
 }
 

@@ -16,7 +16,6 @@ type MainModel struct {
 	Url          string
 	ResponseCode int
 	ErrorMessage string
-	IsCached     bool
 }
 
 // InitModel to initiate fields of MainModel.
