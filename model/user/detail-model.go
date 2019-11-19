@@ -130,10 +130,10 @@ type UserFriendData struct {
 
 // UserHistoryData for main user history list model.
 type UserHistoryData struct {
-	Id       string `json:"id"`
+	Id       int    `json:"id"`
 	Title    string `json:"title"`
 	Type     string `json:"type"`
-	Progress string `json:"progress"`
+	Progress int    `json:"progress"`
 	Date     string `json:"date"`
 }
 

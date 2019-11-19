@@ -1,6 +1,7 @@
 package user
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -65,11 +66,11 @@ func (i *UserHistoryModel) SetAllDetail() {
 }
 
 // GetId to get anime/manga id.
-func (i *UserHistoryModel) GetId(nameArea *goquery.Selection) string {
+func (i *UserHistoryModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "=")
-
-	return splitId[1]
+	idInt, _ := strconv.Atoi(splitId[1])
+	return idInt
 }
 
 // GetTitle to get anime/manga title.
@@ -81,19 +82,18 @@ func (i *UserHistoryModel) GetTitle(nameArea *goquery.Selection) string {
 func (i *UserHistoryModel) GetType(nameArea *goquery.Selection) string {
 	t, _ := nameArea.Find("a").First().Attr("href")
 	splitType := strings.Split(t, ".php")
-
 	return splitType[0][1:]
 }
 
 // GetProgress to get anime/manga progress.
-func (i *UserHistoryModel) GetProgress(nameArea *goquery.Selection) string {
-	return nameArea.Find("strong").First().Text()
+func (i *UserHistoryModel) GetProgress(nameArea *goquery.Selection) int {
+	progInt, _ := strconv.Atoi(nameArea.Find("strong").First().Text())
+	return progInt
 }
 
 // GetDate to get anime/manga history update date.
 func (i *UserHistoryModel) GetDate(eachHistory *goquery.Selection) string {
 	date := eachHistory.Find("td:nth-of-type(2)")
 	date.Find("a").Remove()
-
 	return strings.TrimSpace(date.Text())
 }

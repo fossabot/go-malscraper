@@ -63,7 +63,6 @@ func (i *UserFriendModel) GetImage(friend *goquery.Selection) string {
 func (i *UserFriendModel) GetName(friend *goquery.Selection) string {
 	name, _ := friend.Find("a").Attr("href")
 	splitName := strings.Split(name, "/")
-
 	return splitName[4]
 }
 
@@ -77,6 +76,5 @@ func (i *UserFriendModel) GetLastOnline(friend *goquery.Selection) string {
 func (i *UserFriendModel) GetFriendSince(friend *goquery.Selection) string {
 	friendSince := friend.Find(".friendBlock div:nth-of-type(4)").Text()
 	friendSince = strings.Replace(friendSince, "Friends since", "", -1)
-
 	return strings.TrimSpace(friendSince)
 }
