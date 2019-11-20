@@ -58,11 +58,11 @@ func (i *RecommendationModel) SetAllDetail() {
 }
 
 // GetId to get recommendation id.
-func (i *RecommendationModel) GetId(contentArea *goquery.Selection) string {
+func (i *RecommendationModel) GetId(contentArea *goquery.Selection) int {
 	id, _ := contentArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetTitle to get anime/manga title.
@@ -80,7 +80,6 @@ func (i *RecommendationModel) GetImage(eachRecommendation *goquery.Selection) st
 func (i *RecommendationModel) GetUsername(contentArea *goquery.Selection) string {
 	userArea := contentArea.Find(".borderClass .spaceit_pad:nth-of-type(2)").First()
 	userArea.Find("a").First().Remove()
-
 	return userArea.Find("a").Text()
 }
 
@@ -100,7 +99,6 @@ func (i *RecommendationModel) GetOther(otherArea *goquery.Selection) []OtherReco
 			Recommendation: i.GetOtherRecom(eachOther),
 		})
 	})
-
 	return otherList
 }
 

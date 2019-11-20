@@ -43,7 +43,7 @@ func (i *StatModel) SetAllDetail() {
 
 // SetSummary to set stat summary data.
 func (i *StatModel) SetSummary() {
-	summaryMap := make(map[string]string)
+	summaryMap := make(map[string]int)
 
 	summaryArea := i.Parser.Find(".js-scrollfix-bottom-rel h2").First().Next()
 
@@ -57,7 +57,7 @@ func (i *StatModel) SetSummary() {
 		summaryValue := summaryArea.Text()
 		summaryValue = strings.Replace(summaryValue, ",", "", -1)
 
-		summaryMap[summaryType] = strings.TrimSpace(summaryValue)
+		summaryMap[summaryType], _ = strconv.Atoi(strings.TrimSpace(summaryValue))
 
 		summaryArea = summaryArea.Next()
 	}
@@ -87,25 +87,26 @@ func (i *StatModel) SetScore() {
 }
 
 // GetScoreType to get score type.
-func (i *StatModel) GetScoreType(eachScore *goquery.Selection) string {
-	return eachScore.Find("td").First().Text()
+func (i *StatModel) GetScoreType(eachScore *goquery.Selection) int {
+	typeInt, _ := strconv.Atoi(eachScore.Find("td").First().Text())
+	return typeInt
 }
 
 // GetScoreVote to get score number of vote.
-func (i *StatModel) GetScoreVote(eachScore *goquery.Selection) string {
+func (i *StatModel) GetScoreVote(eachScore *goquery.Selection) int {
 	vote := eachScore.Find("td:nth-of-type(2) span small").Text()
 	vote = strings.Replace(vote, " votes", "", -1)
-
-	return vote[1 : len(vote)-1]
+	voteInt, _ := strconv.Atoi(vote[1 : len(vote)-1])
+	return voteInt
 }
 
 // GetScorePercent to get score percent.
-func (i *StatModel) GetScorePercent(eachScore *goquery.Selection) string {
+func (i *StatModel) GetScorePercent(eachScore *goquery.Selection) float64 {
 	eachScore.Find("td:nth-of-type(2) span small").Remove()
 	percent := eachScore.Find("td:nth-of-type(2) span").Text()
 	percent = strings.Replace(percent, "%", "", -1)
-
-	return strings.TrimSpace(percent)
+	percentFloat, _ := strconv.ParseFloat(strings.TrimSpace(percent), 64)
+	return percentFloat
 }
 
 // SetUser to get user who vote the score.
@@ -150,8 +151,9 @@ func (i *StatModel) GetUsername(usernameArea *goquery.Selection) string {
 }
 
 // GetUserScore to get user score.
-func (i *StatModel) GetUserScore(eachUser *goquery.Selection) string {
-	return eachUser.Find("td:nth-of-type(2)").Text()
+func (i *StatModel) GetUserScore(eachUser *goquery.Selection) int {
+	scoreInt, _ := strconv.Atoi(eachUser.Find("td:nth-of-type(2)").Text())
+	return scoreInt
 }
 
 // GetUserStatus to get user watching/reading status.

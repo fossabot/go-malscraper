@@ -1,24 +1,47 @@
 package additional
 
+// CharacterStaffData for main anime/manga additional character+staff list.
+type CharacterStaffData struct {
+	Character []Character `json:"character"`
+	Staff     []Staff     `json:"staff"`
+}
+
+// Character is a model for character in CharacterStaffData.
+type Character struct {
+	Id    int     `json:"id"`
+	Image string  `json:"image"`
+	Name  string  `json:"name"`
+	Role  string  `json:"role"`
+	Va    []Staff `json:"va"`
+}
+
+// Staff is a common model with id, name, role, and image.
+type Staff struct {
+	Id    int    `json:"id"`
+	Name  string `json:"name"`
+	Role  string `json:"role"`
+	Image string `json:"image"`
+}
+
 // StatData for main anime & manga statistics data model.
 type StatData struct {
-	Summary map[string]string `json:"summary"`
-	Score   []Score           `json:"score"`
-	User    []User            `json:"user"`
+	Summary map[string]int `json:"summary"`
+	Score   []Score        `json:"score"`
+	User    []User         `json:"user"`
 }
 
 // Score is a model for anime/manga score.
 type Score struct {
-	Type    string `json:"type"`
-	Vote    string `json:"vote"`
-	Percent string `json:"percent"`
+	Type    int     `json:"type"`
+	Vote    int     `json:"vote"`
+	Percent float64 `json:"percent"`
 }
 
 // User is a model for user in StatData model.
 type User struct {
-	Image    string `json:"image"`
 	Username string `json:"username"`
-	Score    string `json:"score"`
+	Image    string `json:"image"`
+	Score    int    `json:"score"`
 	Status   string `json:"status"`
 	Episode  string `json:"episode"`
 	Volume   string `json:"volume"`  // manga
@@ -34,8 +57,8 @@ type VideoData struct {
 
 // Episode is a model for episode video in VideoData.
 type Episode struct {
-	Episode string `json:"episode"`
 	Title   string `json:"title"`
+	Episode string `json:"episode"`
 	Link    string `json:"link"`
 }
 
@@ -45,49 +68,26 @@ type Promotion struct {
 	Link  string `json:"link"`
 }
 
-// CharacterStaffData for main anime/manga additional character+staff list.
-type CharacterStaffData struct {
-	Character []Character `json:"character"`
-	Staff     []Staff     `json:"staff"`
-}
-
-// Character is a model for character in CharacterStaffData.
-type Character struct {
-	Id    string  `json:"id"`
-	Image string  `json:"image"`
-	Name  string  `json:"name"`
-	Role  string  `json:"role"`
-	Va    []Staff `json:"va"`
-}
-
-// Staff is a common model with id, name, role, and image.
-type Staff struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Role  string `json:"role"`
-	Image string `json:"image"`
-}
-
 // EpisodeData for main anime additional episode list.
 type EpisodeData struct {
-	Episode       string `json:"episode"`
-	Link          string `json:"link"`
+	Episode       int    `json:"episode"`
 	Title         string `json:"title"`
 	JapaneseTitle string `json:"japanese_title"`
 	Aired         string `json:"aired"`
+	Link          string `json:"link"`
 }
 
 // ReviewData for main anime/manga additional review list.
 type ReviewData struct {
-	Id       string            `json:"id"`
-	Username string            `json:"username"`
-	Image    string            `json:"image"`
-	Helpful  string            `json:"helpful"`
-	Date     DateTime          `json:"date"`
-	Episode  string            `json:"episode"`
-	Chapter  string            `json:"chapter"` // manga
-	Score    map[string]string `json:"score"`
-	Review   string            `json:"review"`
+	Id       int            `json:"id"`
+	Username string         `json:"username"`
+	Image    string         `json:"image"`
+	Helpful  int            `json:"helpful"`
+	Date     DateTime       `json:"date"`
+	Episode  string         `json:"episode"`
+	Chapter  string         `json:"chapter"` // manga
+	Score    map[string]int `json:"score"`
+	Review   string         `json:"review"`
 }
 
 // DateTime is common model for date and time.
@@ -98,7 +98,7 @@ type DateTime struct {
 
 // RecommendationData for main anime/manga additional recommendation list.
 type RecommendationData struct {
-	Id             string       `json:"id"`
+	Id             int          `json:"id"`
 	Title          string       `json:"title"`
 	Image          string       `json:"image"`
 	Username       string       `json:"username"`

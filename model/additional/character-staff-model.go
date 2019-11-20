@@ -68,11 +68,11 @@ func (i *CharacterStaffModel) SetCharacter() {
 }
 
 // GetCharId to get character id.
-func (i *CharacterStaffModel) GetCharId(charNameArea *goquery.Selection) string {
+func (i *CharacterStaffModel) GetCharId(charNameArea *goquery.Selection) int {
 	id, _ := charNameArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetCharImage to get character image.

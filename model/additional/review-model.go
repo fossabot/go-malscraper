@@ -1,6 +1,7 @@
 package additional
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -64,11 +65,11 @@ func (i *ReviewModel) SetAllDetail() {
 }
 
 // GetId to get review id.
-func (i *ReviewModel) GetId(veryBottomArea *goquery.Selection) string {
+func (i *ReviewModel) GetId(veryBottomArea *goquery.Selection) int {
 	id, _ := veryBottomArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "?id=")
-
-	return splitId[1]
+	idInt, _ := strconv.Atoi(splitId[1])
+	return idInt
 }
 
 // GetUsername to get username who wrote the review.
@@ -83,9 +84,10 @@ func (i *ReviewModel) GetImage(topArea *goquery.Selection) string {
 }
 
 // GetHelpful to get number of helpful.
-func (i *ReviewModel) GetHelpful(topArea *goquery.Selection) string {
+func (i *ReviewModel) GetHelpful(topArea *goquery.Selection) int {
 	helpful := topArea.Find("table td:nth-of-type(2) strong").First().Text()
-	return strings.TrimSpace(helpful)
+	helpfulInt, _ := strconv.Atoi(strings.TrimSpace(helpful))
+	return helpfulInt
 }
 
 // GetDate to get review date.
@@ -93,7 +95,6 @@ func (i *ReviewModel) GetDate(topArea *goquery.Selection) DateTime {
 	dateArea := topArea.Find("div").Find("div").First()
 	date := dateArea.Text()
 	time, _ := dateArea.Attr("title")
-
 	return DateTime{
 		Date: date,
 		Time: time,
@@ -109,18 +110,17 @@ func (i *ReviewModel) GetProgress(t string, topArea *goquery.Selection) string {
 	progress := topArea.Find("div").First().Find("div:nth-of-type(2)").Text()
 	progress = strings.Replace(progress, "episodes seen", "", -1)
 	progress = strings.Replace(progress, "chapters read", "", -1)
-
 	return strings.TrimSpace(progress)
 }
 
 // GetScore to get review score.
-func (i *ReviewModel) GetScore(bottomArea *goquery.Selection) map[string]string {
-	scoreMap := make(map[string]string)
+func (i *ReviewModel) GetScore(bottomArea *goquery.Selection) map[string]int {
+	scoreMap := make(map[string]int)
 
 	area := bottomArea.Find("table")
 	area.Find("tr").Each(func(j int, eachScore *goquery.Selection) {
 		scoreType := strings.ToLower(eachScore.Find("td:nth-of-type(1)").Text())
-		scoreValue := eachScore.Find("td:nth-of-type(2)").Text()
+		scoreValue, _ := strconv.Atoi(eachScore.Find("td:nth-of-type(2)").Text())
 		scoreMap[scoreType] = scoreValue
 	})
 
@@ -131,5 +131,12 @@ func (i *ReviewModel) GetScore(bottomArea *goquery.Selection) map[string]string 
 func (i *ReviewModel) GetReview(bottomArea *goquery.Selection) string {
 	bottomArea.Find("a").Remove()
 	bottomArea.Find("div[id^=score]").Remove()
-	return strings.TrimSpace(bottomArea.Text())
+
+	r, _ := regexp.Compile(`[^\S\r\n]+`)
+	reviewContent := r.ReplaceAllString(bottomArea.Text(), " ")
+
+	r, _ = regexp.Compile(`(\n\n \n)`)
+	reviewContent = r.ReplaceAllString(reviewContent, "")
+
+	return strings.TrimSpace(reviewContent)
 }

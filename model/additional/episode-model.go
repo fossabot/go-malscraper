@@ -52,8 +52,9 @@ func (i *EpisodeModel) SetAllDetail() {
 }
 
 // GetEpisode to get episode number.
-func (i *EpisodeModel) GetEpisode(eachEp *goquery.Selection) string {
-	return eachEp.Find(".episode-number").Text()
+func (i *EpisodeModel) GetEpisode(eachEp *goquery.Selection) int {
+	epInt, _ := strconv.Atoi(eachEp.Find(".episode-number").Text())
+	return epInt
 }
 
 // GetLink to get episode link.
