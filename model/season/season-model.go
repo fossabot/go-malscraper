@@ -83,11 +83,11 @@ func (i *SeasonModel) GetImage(eachAnime *goquery.Selection) string {
 }
 
 // GetId to get anime id.
-func (i *SeasonModel) GetId(nameArea *goquery.Selection) string {
+func (i *SeasonModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("p a").Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetTitle to get anime title.
@@ -110,11 +110,11 @@ func (i *SeasonModel) GetProducer(producerArea *goquery.Selection) []IdName {
 }
 
 // GetProducerId to get producer id.
-func (i *SeasonModel) GetProducerId(eachProducer *goquery.Selection) string {
+func (i *SeasonModel) GetProducerId(eachProducer *goquery.Selection) int {
 	id, _ := eachProducer.Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[3]
+	idInt, _ := strconv.Atoi(splitId[3])
+	return idInt
 }
 
 // GetProducerName to get producer name.
@@ -123,17 +123,18 @@ func (i *SeasonModel) GetProducerName(eachProducer *goquery.Selection) string {
 }
 
 // GetEpisode to get anime episode.
-func (i *SeasonModel) GetEpisode(producerArea *goquery.Selection) string {
+func (i *SeasonModel) GetEpisode(producerArea *goquery.Selection) int {
 	episode := producerArea.Find("div.eps").Text()
 	episode = strings.Replace(episode, "eps", "", -1)
 	episode = strings.Replace(episode, "ep", "", -1)
 	episode = strings.TrimSpace(episode)
 
 	if episode == "?" {
-		return ""
+		return 0
 	}
 
-	return episode
+	epInt, _ := strconv.Atoi(episode)
+	return epInt
 }
 
 // GetSource to get anime source.
@@ -148,9 +149,9 @@ func (i *SeasonModel) GetGenre(eachAnime *goquery.Selection) []IdName {
 	area.Find("a").Each(func(j int, eachGenre *goquery.Selection) {
 		id, _ := eachGenre.Attr("href")
 		splitId := strings.Split(id, "/")
-
+		idInt, _ := strconv.Atoi(splitId[3])
 		genreList = append(genreList, IdName{
-			Id:   splitId[3],
+			Id:   idInt,
 			Name: splitId[4],
 		})
 
@@ -193,17 +194,17 @@ func (i *SeasonModel) GetAiring(infoArea *goquery.Selection) string {
 }
 
 // GetMember to get anime member count.
-func (i *SeasonModel) GetMember(infoArea *goquery.Selection) string {
+func (i *SeasonModel) GetMember(infoArea *goquery.Selection) int {
 	member := infoArea.Find(".scormem span[class^=member]").Text()
 	member = strings.Replace(member, ",", "", -1)
-
-	return strings.TrimSpace(member)
+	memberInt, _ := strconv.Atoi(strings.TrimSpace(member))
+	return memberInt
 }
 
 // GetScore to get anime score.
-func (i *SeasonModel) GetScore(infoArea *goquery.Selection) string {
+func (i *SeasonModel) GetScore(infoArea *goquery.Selection) float64 {
 	score := infoArea.Find(".scormem .score").Text()
 	score = strings.Replace(score, "N/A", "", -1)
-
-	return strings.TrimSpace(score)
+	scoreFloat, _ := strconv.ParseFloat(strings.TrimSpace(score), 64)
+	return scoreFloat
 }
