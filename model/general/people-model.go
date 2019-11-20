@@ -49,7 +49,7 @@ func (i *PeopleModel) SetAllDetail() {
 
 // SetId to set people id.
 func (i *PeopleModel) SetId() {
-	i.Data.Id = strconv.Itoa(i.Id)
+	i.Data.Id = i.Id
 }
 
 // SetName to set people name.
@@ -82,7 +82,7 @@ func (i *PeopleModel) SetBiodata() {
 	_, i.Data.AlternativeName = i.GetBiodata("Alternate names")
 	i.Data.Birthday, _ = i.GetBiodata("Birthday")
 	i.Data.Website = i.GetBioWeb()
-	i.Data.Favorite, _ = i.GetBiodata("Member Favorites")
+	i.Data.Favorite = i.GetBioFavorite()
 }
 
 // GetBiodata to get people each detail biodata.
@@ -98,6 +98,9 @@ func (i *PeopleModel) GetBiodata(t string) (string, []string) {
 
 		splitBio[1] = strings.TrimSpace(splitBio[1])
 
+		r, _ = regexp.Compile(`\s+`)
+		splitBio[1] = r.ReplaceAllString(splitBio[1], " ")
+
 		if t == "Alternate names" {
 			splitName := strings.Split(splitBio[1], ", ")
 			return "", splitName
@@ -111,6 +114,25 @@ func (i *PeopleModel) GetBiodata(t string) (string, []string) {
 	}
 
 	return "", nil
+}
+
+// GetBioFavorite to get people member favorite.
+func (i *PeopleModel) GetBioFavorite() int {
+	bioArea, _ := i.Parser.Find("#content table tr td").Html()
+
+	r, _ := regexp.Compile(`(Member Favorites:<\/span>)[^<]*`)
+	bioRegex := r.FindString(bioArea)
+	bioRegex = strip.StripTags(bioRegex)
+
+	if bioRegex != "" {
+		splitBio := strings.Split(bioRegex, ": ")
+		splitBio[1] = strings.TrimSpace(splitBio[1])
+		splitBio[1] = strings.Replace(splitBio[1], ",", "", -1)
+		favInt, _ := strconv.Atoi(splitBio[1])
+		return favInt
+	}
+
+	return 0
 }
 
 // GetBioWeb to get people website.
@@ -169,11 +191,11 @@ func (i *PeopleModel) SetVa() {
 }
 
 // GetAnimeId to get anime id of the voice actor play.
-func (i *PeopleModel) GetAnimeId(animeArea *goquery.Selection) string {
+func (i *PeopleModel) GetAnimeId(animeArea *goquery.Selection) int {
 	animeId, _ := animeArea.Find("a").Attr("href")
 	splitId := strings.Split(animeId, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetAnimeImage to get anime image of the voice actor play.

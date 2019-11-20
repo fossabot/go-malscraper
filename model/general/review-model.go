@@ -48,7 +48,7 @@ func (i *ReviewModel) SetAllDetail() {
 
 // SetId to set review id.
 func (i *ReviewModel) SetId() {
-	i.Data.Id = strconv.Itoa(i.Id)
+	i.Data.Id = i.Id
 }
 
 // SetSource to set review source.
@@ -67,11 +67,11 @@ func (i *ReviewModel) SetSource() {
 }
 
 // GetSourceId to get source id.
-func (i *ReviewModel) GetSourceId(topArea *goquery.Selection) string {
+func (i *ReviewModel) GetSourceId(topArea *goquery.Selection) int {
 	id, _ := topArea.Find("strong a").Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetSourceType to get source type.
@@ -79,9 +79,7 @@ func (i *ReviewModel) GetSourceType(topArea *goquery.Selection) string {
 	typeStr := topArea.Find("small").First().Text()
 	typeStr = strings.Replace(typeStr, "(", "", -1)
 	typeStr = strings.Replace(typeStr, ")", "", -1)
-
 	i.Type = strings.ToLower(typeStr)
-
 	return i.Type
 }
 
@@ -110,7 +108,7 @@ func (i *ReviewModel) SetImage() {
 // SetHelpful to set user number who say helpful.
 func (i *ReviewModel) SetHelpful() {
 	helpful := i.Parser.Find(".borderDark .spaceit table td:nth-of-type(2) strong").First().Text()
-	i.Data.Helpful = strings.TrimSpace(helpful)
+	i.Data.Helpful, _ = strconv.Atoi(strings.TrimSpace(helpful))
 }
 
 // SetDate to set date and time of the review.
@@ -143,12 +141,12 @@ func (i *ReviewModel) SetEpisode() {
 
 // SetScore to set review score.
 func (i *ReviewModel) SetScore() {
-	scoreMap := make(map[string]string)
+	scoreMap := make(map[string]int)
 
 	scoreArea := i.Parser.Find(".borderDark .spaceit").Next().Find("table")
 	scoreArea.Find("tr").Each(func(j int, eachScore *goquery.Selection) {
 		scoreType := strings.ToLower(eachScore.Find("td").First().Text())
-		scoreValue := eachScore.Find("td:nth-of-type(2)").Text()
+		scoreValue, _ := strconv.Atoi(eachScore.Find("td:nth-of-type(2)").Text())
 		scoreMap[scoreType] = scoreValue
 	})
 

@@ -2,22 +2,22 @@ package general
 
 // InfoData for main anime & manga data model.
 type InfoData struct {
-	Id             string                   `json:"id"`
+	Id             int                      `json:"id"`
 	Cover          string                   `json:"cover"`
 	Title          string                   `json:"title"`
 	Title2         Title2                   `json:"title2"`
 	Video          string                   `json:"video"`
 	Synopsis       string                   `json:"synopsis"`
-	Score          string                   `json:"score"`
-	Voter          string                   `json:"voter"`
-	Rank           string                   `json:"rank"`
-	Popularity     string                   `json:"popularity"`
-	Members        string                   `json:"members"`
-	Favorite       string                   `json:"favorite"`
+	Score          float64                  `json:"score"`
+	Voter          int                      `json:"voter"`
+	Rank           int                      `json:"rank"`
+	Popularity     int                      `json:"popularity"`
+	Members        int                      `json:"members"`
+	Favorite       int                      `json:"favorite"`
 	Type           string                   `json:"type"`
-	Episodes       string                   `json:"episodes"`
-	Volumes        string                   `json:"volumes"`  // manga
-	Chapters       string                   `json:"chapters"` // manga
+	Episodes       int                      `json:"episodes"`
+	Volumes        int                      `json:"volumes"`  // manga
+	Chapters       int                      `json:"chapters"` // manga
 	Status         string                   `json:"status"`
 	Aired          StartEndDate             `json:"aired"`
 	Published      StartEndDate             `json:"published"` // manga
@@ -55,32 +55,32 @@ type StartEndDate struct {
 
 // IdName is common model for producer, licensors, studios, and genres.
 type IdName struct {
-	Id   string `json:"id"`
+	Id   int    `json:"id"`
 	Name string `json:"name"`
 }
 
 // IdTitleType is common model for related.
 type IdTitleType struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Title string `json:"title"`
 	Type  string `json:"type"`
 }
 
 // Character for character data model.
 type Character struct {
-	Id      string `json:"id"`
+	Id      int    `json:"id"`
 	Name    string `json:"name"`
 	Role    string `json:"role"`
 	Image   string `json:"image"`
+	VaId    int    `json:"va_id"`
 	VaName  string `json:"va_name"`
-	VaId    string `json:"va_id"`
 	VaImage string `json:"va_image"`
 	VaRole  string `json:"va_role"`
 }
 
 // Staff for staff data model.
 type Staff struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Name  string `json:"name"`
 	Role  string `json:"role"`
 	Image string `json:"image"`
@@ -100,33 +100,33 @@ type ReviewDate struct {
 
 // Review for review data model.
 type Review struct {
-	Id       string            `json:"id"`
-	Username string            `json:"username"`
-	Image    string            `json:"image"`
-	Helpful  string            `json:"helpful"`
-	Date     ReviewDate        `json:"date"`
-	Episode  string            `json:"episode"`
-	Chapter  string            `json:"chapter"`
-	Score    map[string]string `json:"score"`
-	Review   string            `json:"review"`
+	Id       int            `json:"id"`
+	Username string         `json:"username"`
+	Image    string         `json:"image"`
+	Helpful  int            `json:"helpful"`
+	Date     ReviewDate     `json:"date"`
+	Episode  string         `json:"episode"`
+	Chapter  string         `json:"chapter"`
+	Score    map[string]int `json:"score"`
+	Review   string         `json:"review"`
 }
 
 // recommendation for recommendation data model.
 type Recommendation struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Title string `json:"title"`
 	Image string `json:"image"`
-	User  string `json:"user"`
+	User  int    `json:"user"`
 }
 
 // CharacterData for main character data model.
 type CharacterData struct {
-	Id           string             `json:"id"`
+	Id           int                `json:"id"`
 	Image        string             `json:"image"`
 	Nickname     string             `json:"nickname"`
 	Name         string             `json:"name"`
 	NameKanji    string             `json:"name_kanji"`
-	Favorite     string             `json:"favorite"`
+	Favorite     int                `json:"favorite"`
 	About        string             `json:"about"`
 	Animeography []IdTitleImageRole `json:"animeography"`
 	Mangaography []IdTitleImageRole `json:"mangaography"`
@@ -135,7 +135,7 @@ type CharacterData struct {
 
 // IdTitleImageRole is common model for animeography and mangaography.
 type IdTitleImageRole struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Title string `json:"title"`
 	Image string `json:"image"`
 	Role  string `json:"role"`
@@ -143,7 +143,7 @@ type IdTitleImageRole struct {
 
 // PeopleData for main people data model.
 type PeopleData struct {
-	Id              string             `json:"id"`
+	Id              int                `json:"id"`
 	Name            string             `json:"name"`
 	Image           string             `json:"image"`
 	GivenName       string             `json:"given_name"`
@@ -151,7 +151,7 @@ type PeopleData struct {
 	AlternativeName []string           `json:"alternative_name"`
 	Birthday        string             `json:"birthday"`
 	Website         string             `json:"website"`
-	Favorite        string             `json:"favorite"`
+	Favorite        int                `json:"favorite"`
 	More            string             `json:"more"`
 	Va              []AnimeCharacter   `json:"va"`
 	Staff           []IdTitleImageRole `json:"staff"`
@@ -166,14 +166,14 @@ type AnimeCharacter struct {
 
 // IdImageTitle is common model for a simple anime model.
 type IdImageTitle struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Image string `json:"image"`
 	Title string `json:"title"`
 }
 
 // ProducerData for main studio/producer/magazine data model.
 type ProducerData struct {
-	Id            string       `json:"id"`
+	Id            int          `json:"id"`
 	Image         string       `json:"image"`
 	Title         string       `json:"title"`
 	Genre         []IdTypeName `json:"genre"`
@@ -181,19 +181,19 @@ type ProducerData struct {
 	Source        string       `json:"source"`
 	Producer      []IdName     `json:"producer"`
 	Author        []IdName     `json:"author"` // manga
-	Episode       string       `json:"episode"`
-	Volumes       string       `json:"volume"` // manga
+	Episode       int          `json:"episode"`
+	Volumes       int          `json:"volume"` // manga
 	Licensor      []string     `json:"licensor"`
 	Serialization string       `json:"serialization"` // manga
 	Type          string       `json:"type"`
 	AiringStart   string       `json:"airing_start"`
-	Member        string       `json:"member"`
-	Score         string       `json:"score"`
+	Member        int          `json:"member"`
+	Score         float64      `json:"score"`
 }
 
 // IdTypeName is common model for genre.
 type IdTypeName struct {
-	Id   string `json:"id"`
+	Id   int    `json:"id"`
 	Type string `json:"type"`
 	Name string `json:"name"`
 }
@@ -212,7 +212,7 @@ type RecomSource struct {
 
 // IdTitleTypeImage is common model for recommendation liked model.
 type IdTitleTypeImage struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Title string `json:"title"`
 	Type  string `json:"type"`
 	Image string `json:"image"`
@@ -226,14 +226,14 @@ type RecomList struct {
 
 // ReviewData for review main model.
 type ReviewData struct {
-	Id       string            `json:"id"`
-	Source   IdTitleTypeImage  `json:"source"`
-	Username string            `json:"username"`
-	Image    string            `json:"image"`
-	Helpful  string            `json:"helpful"`
-	Date     ReviewDate        `json:"date"`
-	Episode  string            `json:"episode"`
-	Chapter  string            `json:"chapter"` // manga
-	Score    map[string]string `json:"score"`
-	Review   string            `json:"review"`
+	Id       int              `json:"id"`
+	Source   IdTitleTypeImage `json:"source"`
+	Username string           `json:"username"`
+	Image    string           `json:"image"`
+	Helpful  int              `json:"helpful"`
+	Date     ReviewDate       `json:"date"`
+	Episode  string           `json:"episode"`
+	Chapter  string           `json:"chapter"` // manga
+	Score    map[string]int   `json:"score"`
+	Review   string           `json:"review"`
 }

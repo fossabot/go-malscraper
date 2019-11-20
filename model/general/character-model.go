@@ -49,7 +49,7 @@ func (i *CharacterModel) SetAllDetail() {
 
 // SetId to set character id.
 func (i *CharacterModel) SetId() {
-	i.Data.Id = strconv.Itoa(i.Id)
+	i.Data.Id = i.Id
 }
 
 // SetImage to set character image.
@@ -109,7 +109,7 @@ func (i *CharacterModel) SetFavorite() {
 	splitFav := strings.Split(regexFav, ": ")
 	splitFav[1] = strings.Replace(splitFav[1], ",", "", -1)
 
-	i.Data.Favorite = splitFav[1]
+	i.Data.Favorite, _ = strconv.Atoi(splitFav[1])
 }
 
 // SetAbout to set character about.
@@ -182,11 +182,11 @@ func (i *CharacterModel) SetVa() {
 }
 
 // GetVaId to get animeography, mangaography and staff id.
-func (i *CharacterModel) GetVaId(vaArea *goquery.Selection) string {
+func (i *CharacterModel) GetVaId(vaArea *goquery.Selection) int {
 	id, _ := vaArea.Find("a").Attr("href")
 	parsedId := strings.Split(id, "/")
-
-	return parsedId[4]
+	idInt, _ := strconv.Atoi(parsedId[4])
+	return idInt
 }
 
 // GetVaName to get animeography, mangaography and staff name.

@@ -72,11 +72,11 @@ func (i *RecommendationModel) SetSource() {
 }
 
 // GetSourceId to get source id.
-func (i *RecommendationModel) GetSourceId(sourceArea *goquery.Selection) string {
+func (i *RecommendationModel) GetSourceId(sourceArea *goquery.Selection) int {
 	id, _ := sourceArea.Find("a").Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetSourceTitle to get source title.

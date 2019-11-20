@@ -1,13 +1,10 @@
 package general
 
 import (
-	_ "fmt"
-	_ "regexp"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	_ "github.com/grokify/html-strip-tags-go"
 	"github.com/rl404/go-malscraper/helper"
 	"github.com/rl404/go-malscraper/model"
 )
@@ -83,11 +80,11 @@ func (i *ProducerModel) SetAllDetail() {
 }
 
 // GetId to get id of anime/manga from the list.
-func (i *ProducerModel) GetId(nameArea *goquery.Selection) string {
+func (i *ProducerModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("p a").Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetImage to get anime/manga image from the list.
@@ -109,9 +106,9 @@ func (i *ProducerModel) GetGenre(eachArea *goquery.Selection) []IdTypeName {
 	genreArea.Find("a").Each(func(j int, eachGenre *goquery.Selection) {
 		genreLink, _ := eachGenre.Attr("href")
 		splitLink := strings.Split(genreLink, "/")
-
+		idInt, _ := strconv.Atoi(splitLink[3])
 		genreList = append(genreList, IdTypeName{
-			Id:   splitLink[3],
+			Id:   idInt,
 			Type: splitLink[1],
 			Name: eachGenre.Text(),
 		})
@@ -150,15 +147,17 @@ func (i *ProducerModel) GetProducer(t string, producerArea *goquery.Selection) [
 }
 
 // GetProducerId to get producer id.
-func (i *ProducerModel) GetProducerId(eachProducer *goquery.Selection) string {
+func (i *ProducerModel) GetProducerId(eachProducer *goquery.Selection) int {
 	link, _ := eachProducer.Attr("href")
 	splitLink := strings.Split(link, "/")
 
 	if i.T1 == "anime" {
-		return splitLink[3]
+		idInt, _ := strconv.Atoi(splitLink[3])
+		return idInt
 	}
 
-	return splitLink[4]
+	idInt, _ := strconv.Atoi(splitLink[4])
+	return idInt
 }
 
 // GetProducerName to get producer name.
@@ -167,9 +166,9 @@ func (i *ProducerModel) GetProducerName(eachProducer *goquery.Selection) string 
 }
 
 // GetEpisode to get anime/manga episode/volume.
-func (i *ProducerModel) GetEpisode(t string, producerArea *goquery.Selection) string {
+func (i *ProducerModel) GetEpisode(t string, producerArea *goquery.Selection) int {
 	if i.T1 != t {
-		return ""
+		return 0
 	}
 
 	episodeArea := producerArea.Find("div.eps").Text()
@@ -177,8 +176,14 @@ func (i *ProducerModel) GetEpisode(t string, producerArea *goquery.Selection) st
 	episodeArea = strings.Replace(episodeArea, "ep", "", -1)
 	episodeArea = strings.Replace(episodeArea, "vols", "", -1)
 	episodeArea = strings.Replace(episodeArea, "vol", "", -1)
+	episodeArea = strings.TrimSpace(episodeArea)
 
-	return strings.TrimSpace(episodeArea)
+	if episodeArea == "?" {
+		return 0
+	}
+
+	epInt, _ := strconv.Atoi(episodeArea)
+	return epInt
 }
 
 // GetLicensor to get anime licensor.
@@ -188,7 +193,6 @@ func (i *ProducerModel) GetLicensor(eachArea *goquery.Selection) []string {
 	}
 
 	licensor, _ := eachArea.Find("div[class=\"synopsis js-synopsis\"] .licensors").Attr("data-licensors")
-
 	return helper.ArrayFilter(strings.Split(licensor, ","))
 }
 
@@ -209,7 +213,6 @@ func (i *ProducerModel) GetType(infoArea *goquery.Selection) string {
 
 	typeArea := infoArea.Find(".info").Text()
 	splitType := strings.Split(typeArea, "-")
-
 	return strings.TrimSpace(splitType[0])
 }
 
@@ -220,15 +223,22 @@ func (i *ProducerModel) GetAiring(infoArea *goquery.Selection) string {
 }
 
 // GetMember to get anime/manga member number.
-func (i *ProducerModel) GetMember(infoArea *goquery.Selection) string {
+func (i *ProducerModel) GetMember(infoArea *goquery.Selection) int {
 	member := infoArea.Find(".scormem span[class^=member]").Text()
 	member = strings.Replace(member, ",", "", -1)
-
-	return strings.TrimSpace(member)
+	memberInt, _ := strconv.Atoi(strings.TrimSpace(member))
+	return memberInt
 }
 
 // GetScore to get anime/manga score.
-func (i *ProducerModel) GetScore(infoArea *goquery.Selection) string {
+func (i *ProducerModel) GetScore(infoArea *goquery.Selection) float64 {
 	score := infoArea.Find(".scormem .score").Text()
-	return strings.TrimSpace(score)
+	score = strings.TrimSpace(score)
+
+	if score == "N/A" {
+		return 0
+	}
+
+	scoreFloat, _ := strconv.ParseFloat(strings.TrimSpace(score), 64)
+	return scoreFloat
 }

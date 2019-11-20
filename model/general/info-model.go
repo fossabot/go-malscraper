@@ -60,13 +60,12 @@ func (i *InfoModel) SetAllDetail() {
 
 // SetId to set anime or manga id.
 func (i *InfoModel) SetId() {
-	i.Data.Id = strconv.Itoa(i.Id)
+	i.Data.Id = i.Id
 }
 
 // SetCover to set anime or manga cover image.
 func (i *InfoModel) SetCover() {
-	image := i.Parser.Find("img.ac")
-	imageSrc, _ := image.Attr("src")
+	imageSrc, _ := i.Parser.Find("img.ac").Attr("src")
 	i.Data.Cover = helper.ImageUrlCleaner(imageSrc)
 }
 
@@ -98,9 +97,7 @@ func (i *InfoModel) GetTitle2(infoArea *goquery.Selection, t string) string {
 
 // SetVideo to set anime or manga video url.
 func (i *InfoModel) SetVideo() {
-	videoArea := i.Parser.Find(".video-promotion a")
-	videoUrl, _ := videoArea.Attr("href")
-
+	videoUrl, _ := i.Parser.Find(".video-promotion a").Attr("href")
 	i.Data.Video = helper.VideoUrlCleaner(videoUrl)
 }
 
@@ -120,52 +117,44 @@ func (i *InfoModel) SetScore() {
 	score := strings.TrimSpace(scoreArea.Text())
 
 	if score != "N/A" {
-		i.Data.Score = score
+		i.Data.Score, _ = strconv.ParseFloat(score, 64)
 	} else {
-		i.Data.Score = ""
+		i.Data.Score = 0
 	}
 }
 
 // SetVoter to set number of user who vote the score.
 func (i *InfoModel) SetVoter() {
-	voterArea := i.Parser.Find("div[class=\"fl-l score\"]")
-	voter, _ := voterArea.Attr("data-user")
+	voter, _ := i.Parser.Find("div[class=\"fl-l score\"]").Attr("data-user")
 
 	voter = strings.Replace(voter, "users", "", -1)
 	voter = strings.Replace(voter, "user", "", -1)
 	voter = strings.Replace(voter, ",", "", -1)
 
-	i.Data.Voter = strings.TrimSpace(voter)
+	i.Data.Voter, _ = strconv.Atoi(strings.TrimSpace(voter))
 }
 
 // SetRank to set rank of the anime or manga.
 func (i *InfoModel) SetRank() {
-	rankArea := i.Parser.Find("span[class=\"numbers ranked\"] strong")
+	rank := i.Parser.Find("span[class=\"numbers ranked\"] strong").Text()
 
-	rank := ""
-	if rankArea.Text() != "N/A" {
-		rank = rankArea.Text()
+	if rank == "N/A" {
+		rank = ""
 	}
 
-	i.Data.Rank = strings.Replace(rank, "#", "", -1)
+	i.Data.Rank, _ = strconv.Atoi(strings.Replace(rank, "#", "", -1))
 }
 
 // SetPopularity to set popularity rank of the anime or manga.
 func (i *InfoModel) SetPopularity() {
-	popularityArea := i.Parser.Find("span[class=\"numbers popularity\"] strong")
-
-	rank := popularityArea.Text()
-
-	i.Data.Popularity = strings.Replace(rank, "#", "", -1)
+	popularity := i.Parser.Find("span[class=\"numbers popularity\"] strong").Text()
+	i.Data.Popularity, _ = strconv.Atoi(strings.Replace(popularity, "#", "", -1))
 }
 
 // SetMembers to set number of member of the anime or manga.
 func (i *InfoModel) SetMembers() {
-	memberArea := i.Parser.Find("span[class=\"numbers members\"] strong")
-
-	member := memberArea.Text()
-
-	i.Data.Members = strings.Replace(member, ",", "", -1)
+	member := i.Parser.Find("span[class=\"numbers members\"] strong").Text()
+	i.Data.Members, _ = strconv.Atoi(strings.Replace(member, ",", "", -1))
 }
 
 // SetFavorite to set number of user who favorite the anime or manga.
@@ -176,7 +165,7 @@ func (i *InfoModel) SetFavorite() {
 	favorite = strings.Replace(favorite, favoriteTitle, "", -1)
 	favorite = strings.Replace(favorite, ",", "", -1)
 
-	i.Data.Favorite = strings.TrimSpace(favorite)
+	i.Data.Favorite, _ = strconv.Atoi(strings.TrimSpace(favorite))
 }
 
 // SetOtherInfo to set other detail anime or manga info.
@@ -194,15 +183,15 @@ func (i *InfoModel) SetOtherInfo() {
 				}
 
 				if infoType == "episodes" {
-					i.Data.Episodes = i.GetCleanInfo(infoArea)
+					i.Data.Episodes, _ = strconv.Atoi(i.GetCleanInfo(infoArea))
 				}
 
 				if infoType == "volumes" {
-					i.Data.Volumes = i.GetCleanInfo(infoArea)
+					i.Data.Volumes, _ = strconv.Atoi(i.GetCleanInfo(infoArea))
 				}
 
 				if infoType == "chapters" {
-					i.Data.Chapters = i.GetCleanInfo(infoArea)
+					i.Data.Chapters, _ = strconv.Atoi(i.GetCleanInfo(infoArea))
 				}
 
 				if infoType == "status" {
@@ -313,9 +302,9 @@ func (i *InfoModel) GetIdNameInfo(infoArea *goquery.Selection, infoType string, 
 			link, _ := eachName.Attr("href")
 			splitLink := strings.Split(link, "/")
 
-			infoId := splitLink[3]
+			infoId, _ := strconv.Atoi(splitLink[3])
 			if infoType == "authors" {
-				infoId = splitLink[2]
+				infoId, _ = strconv.Atoi(splitLink[2])
 			}
 
 			IdNameList = append(IdNameList, IdName{
@@ -344,9 +333,10 @@ func (i *InfoModel) SetRelated() {
 		relatedData.Find("a").Each(func(i int, eachData *goquery.Selection) {
 			relatedLink, _ := eachData.Attr("href")
 			splitLink := strings.Split(relatedLink, "/")
+			idInt, _ := strconv.Atoi(splitLink[2])
 
 			relatedList = append(relatedList, IdTitleType{
-				Id:    splitLink[2],
+				Id:    idInt,
 				Title: eachData.Text(),
 				Type:  splitLink[1],
 			})
@@ -388,17 +378,17 @@ func (i *InfoModel) SetCharacter() {
 }
 
 // GetCharId to get character or staff id from link.
-func (i *InfoModel) GetCharId(charArea *goquery.Selection) string {
+func (i *InfoModel) GetCharId(charArea *goquery.Selection) int {
 	found, _ := charArea.Html()
 
 	if found == "" {
-		return ""
+		return 0
 	}
 
 	charLink, _ := charArea.Find("a").Attr("href")
 	splitLink := strings.Split(charLink, "/")
-
-	return splitLink[4]
+	idInt, _ := strconv.Atoi(splitLink[4])
+	return idInt
 }
 
 // GetCharName to get character or staff name from link.
@@ -406,7 +396,6 @@ func (i *InfoModel) GetCharName(charArea *goquery.Selection) string {
 	r, _ := regexp.Compile(`\s+`)
 	charName := charArea.Find("a").Text()
 	charName = r.ReplaceAllString(charName, " ")
-
 	return strings.TrimSpace(charName)
 }
 
@@ -470,7 +459,6 @@ func (i *InfoModel) GetCleanSong(div string) []string {
 		song = strings.TrimSpace(song)
 		songList = append(songList, song)
 	})
-
 	return songList
 }
 
@@ -500,11 +488,11 @@ func (i *InfoModel) SetReview() {
 }
 
 // GetReviewId to get anime or manga review id.
-func (i *InfoModel) GetReviewId(veryBottomArea *goquery.Selection) string {
+func (i *InfoModel) GetReviewId(veryBottomArea *goquery.Selection) int {
 	idLink, _ := veryBottomArea.Find("a").Attr("href")
 	splitLink := strings.Split(idLink, "?id=")
-
-	return splitLink[1]
+	idInt, _ := strconv.Atoi(splitLink[1])
+	return idInt
 }
 
 // GetReviewUsername to get anime or manga review username.
@@ -520,9 +508,10 @@ func (i *InfoModel) GetReviewImage(topArea *goquery.Selection) string {
 }
 
 // GetReviewHelpful to get review helpful number.
-func (i *InfoModel) GetReviewHelpful(topArea *goquery.Selection) string {
+func (i *InfoModel) GetReviewHelpful(topArea *goquery.Selection) int {
 	reviewHelpful := topArea.Find("table td:nth-of-type(2) strong span[id^=rhelp]").Text()
-	return strings.TrimSpace(reviewHelpful)
+	helpfulInt, _ := strconv.Atoi(strings.TrimSpace(reviewHelpful))
+	return helpfulInt
 }
 
 // GetReviewDate to get review date.
@@ -530,7 +519,6 @@ func (i *InfoModel) GetReviewDate(topArea *goquery.Selection) ReviewDate {
 	reviewDate := topArea.Find("div:nth-of-type(1)").Find("div:nth-of-type(1)")
 	dateDate := reviewDate.Text()
 	dateTime, _ := reviewDate.Attr("title")
-
 	return ReviewDate{
 		Date: dateDate,
 		Time: dateTime,
@@ -549,12 +537,12 @@ func (i *InfoModel) GetReviewProgress(topArea *goquery.Selection, t string) stri
 }
 
 // GetReviewScore to get review score.
-func (i *InfoModel) GetReviewScore(bottomArea *goquery.Selection) map[string]string {
-	reviewScore := make(map[string]string)
+func (i *InfoModel) GetReviewScore(bottomArea *goquery.Selection) map[string]int {
+	reviewScore := make(map[string]int)
 	scoreArea := bottomArea.Find("table")
 	scoreArea.Find("tr").Each(func(j int, eachScore *goquery.Selection) {
 		scoreType := strings.ToLower(eachScore.Find("td:nth-of-type(1)").Text())
-		scoreValue := eachScore.Find("td:nth-of-type(2)").Text()
+		scoreValue, _ := strconv.Atoi(eachScore.Find("td:nth-of-type(2)").Text())
 		reviewScore[scoreType] = scoreValue
 	})
 	return reviewScore
@@ -592,20 +580,23 @@ func (i *InfoModel) SetRecommendation() {
 }
 
 // GetRecomId to get recommendation id.
-func (i *InfoModel) GetRecomId(eachRecommendation *goquery.Selection) string {
+func (i *InfoModel) GetRecomId(eachRecommendation *goquery.Selection) int {
 	recomLink, _ := eachRecommendation.Find("a").Attr("href")
 	splitLink := strings.Split(recomLink, "/")
 
 	if eachRecommendation.Find(".users").Text() == "AutoRec" {
-		return splitLink[4]
+		idInt, _ := strconv.Atoi(splitLink[4])
+		return idInt
 	}
 
 	splitLink = strings.Split(splitLink[5], "-")
 
 	if splitLink[0] == strconv.Itoa(i.Id) {
-		return splitLink[1]
+		idInt, _ := strconv.Atoi(splitLink[1])
+		return idInt
 	} else {
-		return splitLink[0]
+		idInt, _ := strconv.Atoi(splitLink[0])
+		return idInt
 	}
 }
 
@@ -621,14 +612,15 @@ func (i *InfoModel) GetRecomImage(eachRecommendation *goquery.Selection) string 
 }
 
 // GetRecomUser to get number of user who recommend the anime or manga.
-func (i *InfoModel) GetRecomUser(eachRecommendation *goquery.Selection) string {
+func (i *InfoModel) GetRecomUser(eachRecommendation *goquery.Selection) int {
 	recomUser := eachRecommendation.Find(".users").Text()
 
 	if recomUser == "AutoRec" {
-		return "0"
+		return 0
 	}
 
 	recomUser = strings.Replace(recomUser, "Users", "", -1)
 	recomUser = strings.Replace(recomUser, "User", "", -1)
-	return strings.TrimSpace(recomUser)
+	recomInt, _ := strconv.Atoi(strings.TrimSpace(recomUser))
+	return recomInt
 }
