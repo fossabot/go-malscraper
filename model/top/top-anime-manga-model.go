@@ -70,9 +70,10 @@ func (i *TopAnimeMangaModel) SetAllDetail() {
 }
 
 // GetRank to get anime/manga rank.
-func (i *TopAnimeMangaModel) GetRank(eachTop *goquery.Selection) string {
+func (i *TopAnimeMangaModel) GetRank(eachTop *goquery.Selection) int {
 	rank := eachTop.Find("td").First().Find("span").Text()
-	return strings.TrimSpace(rank)
+	rankInt, _ := strconv.Atoi(strings.TrimSpace(rank))
+	return rankInt
 }
 
 // GetImage to get anime/manga image.
@@ -82,9 +83,10 @@ func (i *TopAnimeMangaModel) GetImage(eachTop *goquery.Selection) string {
 }
 
 // GetId to get anime/manga id.
-func (i *TopAnimeMangaModel) GetId(nameArea *goquery.Selection) string {
+func (i *TopAnimeMangaModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("div").First().Attr("id")
-	return strings.Replace(id, "area", "", -1)
+	idInt, _ := strconv.Atoi(strings.Replace(id, "area", "", -1))
+	return idInt
 }
 
 // GetTitle to get anime/manga title.
@@ -99,17 +101,18 @@ func (i *TopAnimeMangaModel) GetType(parsedInfo []string) string {
 }
 
 // GetEpCh to get anime/manga episode/chapter.
-func (i *TopAnimeMangaModel) GetEpCh(t string, parsedInfo []string) string {
+func (i *TopAnimeMangaModel) GetEpCh(t string, parsedInfo []string) int {
 	if i.SuperType != t {
-		return ""
+		return 0
 	}
 
 	splitEpCh := strings.Split(strings.TrimSpace(parsedInfo[0]), " ")
 	if splitEpCh[1][1:] == "?" {
-		return ""
+		return 0
 	}
 
-	return splitEpCh[1][1:]
+	epChInt, _ := strconv.Atoi(splitEpCh[1][1:])
+	return epChInt
 }
 
 // GetDate to get anime/manga start/end date.
@@ -119,17 +122,19 @@ func (i *TopAnimeMangaModel) GetDate(parsedInfo []string, t int) string {
 }
 
 // GetMember to get anime/manga member number.
-func (i *TopAnimeMangaModel) GetMember(parsedInfo []string) string {
+func (i *TopAnimeMangaModel) GetMember(parsedInfo []string) int {
 	member := strings.TrimSpace(parsedInfo[2])
 	member = strings.Replace(member, "members", "", -1)
 	member = strings.Replace(member, "favorites", "", -1)
 	member = strings.Replace(member, ",", "", -1)
-
-	return strings.TrimSpace(member)
+	memberInt, _ := strconv.Atoi(strings.TrimSpace(member))
+	return memberInt
 }
 
 // GetScore to get anime/manga score.
-func (i *TopAnimeMangaModel) GetScore(eachTop *goquery.Selection) string {
+func (i *TopAnimeMangaModel) GetScore(eachTop *goquery.Selection) float64 {
 	score := eachTop.Find("td:nth-of-type(3)").Text()
-	return strings.TrimSpace(strings.Replace(score, "N/A", "", -1))
+	score = strings.TrimSpace(strings.Replace(score, "N/A", "", -1))
+	scoreFloat, _ := strconv.ParseFloat(score, 64)
+	return scoreFloat
 }

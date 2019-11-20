@@ -55,17 +55,18 @@ func (i *TopCharacterModel) SetAllDetail() {
 }
 
 // GetRank to get character rank.
-func (i *TopCharacterModel) GetRank(eachChar *goquery.Selection) string {
+func (i *TopCharacterModel) GetRank(eachChar *goquery.Selection) int {
 	rank := eachChar.Find("td").First().Find("span").Text()
-	return strings.TrimSpace(rank)
+	rankInt, _ := strconv.Atoi(strings.TrimSpace(rank))
+	return rankInt
 }
 
 // GetId to get character id.
-func (i *TopCharacterModel) GetId(nameArea *goquery.Selection) string {
+func (i *TopCharacterModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetName to get character name.
@@ -98,9 +99,9 @@ func (i *TopCharacterModel) GetRole(eachChar *goquery.Selection, areaClass strin
 		linkA := eachRole.Find("a").First()
 		link, _ := linkA.Attr("href")
 		splitId := strings.Split(link, "/")
-
+		idInt, _ := strconv.Atoi(splitId[4])
 		roleList = append(roleList, IdTitle{
-			Id:    splitId[4],
+			Id:    idInt,
 			Title: linkA.Text(),
 		})
 	})
@@ -109,7 +110,9 @@ func (i *TopCharacterModel) GetRole(eachChar *goquery.Selection, areaClass strin
 }
 
 // GetFavorite to get character favorite number.
-func (i *TopCharacterModel) GetFavorite(eachChar *goquery.Selection) string {
+func (i *TopCharacterModel) GetFavorite(eachChar *goquery.Selection) int {
 	fav := eachChar.Find(".favorites").Text()
-	return strings.TrimSpace(strings.Replace(fav, ",", "", -1))
+	fav = strings.TrimSpace(strings.Replace(fav, ",", "", -1))
+	favInt, _ := strconv.Atoi(fav)
+	return favInt
 }

@@ -55,17 +55,18 @@ func (i *TopPeopleModel) SetAllDetail() {
 }
 
 // GetRank to get people rank.
-func (i *TopPeopleModel) GetRank(eachPeople *goquery.Selection) string {
+func (i *TopPeopleModel) GetRank(eachPeople *goquery.Selection) int {
 	rank := eachPeople.Find("td").First().Find("span").Text()
-	return strings.TrimSpace(rank)
+	rankInt, _ := strconv.Atoi(strings.TrimSpace(rank))
+	return rankInt
 }
 
 //GetId to get people id.
-func (i *TopPeopleModel) GetId(nameArea *goquery.Selection) string {
+func (i *TopPeopleModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetName to get people name.
@@ -106,7 +107,9 @@ func (i *TopPeopleModel) GetBirthday(eachPeople *goquery.Selection) string {
 }
 
 // GetFavorite to get people number favorite.
-func (i *TopPeopleModel) GetFavorite(eachPeople *goquery.Selection) string {
+func (i *TopPeopleModel) GetFavorite(eachPeople *goquery.Selection) int {
 	fav := eachPeople.Find(".favorites").Text()
-	return strings.TrimSpace(strings.Replace(fav, ",", "", -1))
+	fav = strings.TrimSpace(strings.Replace(fav, ",", "", -1))
+	favInt, _ := strconv.Atoi(fav)
+	return favInt
 }
