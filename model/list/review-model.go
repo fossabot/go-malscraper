@@ -69,17 +69,16 @@ func (i *ReviewModel) SetAllDetail() {
 }
 
 // GetId to get review id.
-func (i *ReviewModel) GetId(veryBottomArea *goquery.Selection) string {
+func (i *ReviewModel) GetId(veryBottomArea *goquery.Selection) int {
 	id, _ := veryBottomArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "?id=")
-
-	return splitId[1]
+	idInt, _ := strconv.Atoi(splitId[1])
+	return idInt
 }
 
 // GetSource to get review source.
 func (i *ReviewModel) GetSource(topArea *goquery.Selection, bottomArea *goquery.Selection) ReviewSource {
 	sourceArea := topArea.Find(".mb8:nth-of-type(2)")
-
 	return ReviewSource{
 		Id:    i.GetSourceId(sourceArea),
 		Type:  i.GetSourceType(sourceArea),
@@ -89,11 +88,11 @@ func (i *ReviewModel) GetSource(topArea *goquery.Selection, bottomArea *goquery.
 }
 
 // GetSourceId to get review source id.
-func (i *ReviewModel) GetSourceId(sourceArea *goquery.Selection) string {
+func (i *ReviewModel) GetSourceId(sourceArea *goquery.Selection) int {
 	id, _ := sourceArea.Find("strong a").First().Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetSourceType to get review source type.
@@ -101,7 +100,6 @@ func (i *ReviewModel) GetSourceType(sourceArea *goquery.Selection) string {
 	typ := sourceArea.Find("small").First().Text()
 	typ = strings.Replace(typ, "(", "", -1)
 	typ = strings.Replace(typ, ")", "", -1)
-
 	return strings.ToLower(typ)
 }
 
@@ -130,9 +128,10 @@ func (i *ReviewModel) GetImage(topArea *goquery.Selection) string {
 }
 
 // GetHelpful to get review helpful number.
-func (i *ReviewModel) GetHelpful(topArea *goquery.Selection) string {
+func (i *ReviewModel) GetHelpful(topArea *goquery.Selection) int {
 	helpful := topArea.Find("table td:nth-of-type(2) strong").Text()
-	return strings.TrimSpace(helpful)
+	helpfulInt, _ := strconv.Atoi(strings.TrimSpace(helpful))
+	return helpfulInt
 }
 
 // GetDate to get review date and time.
@@ -140,7 +139,6 @@ func (i *ReviewModel) GetDate(topArea *goquery.Selection) DateTime {
 	area := topArea.Find("div").First().Find("div").First()
 	date := area.Text()
 	time, _ := area.Attr("title")
-
 	return DateTime{
 		Date: date,
 		Time: time,
@@ -155,21 +153,19 @@ func (i *ReviewModel) GetProgress(topArea *goquery.Selection, t string) string {
 
 	area := topArea.Find("div").First().Find("div:nth-of-type(2)").Text()
 	value := strings.Replace(area, "episodes seen", "", -1)
-	value = strings.Replace(area, "chapters seen", "", -1)
-
+	value = strings.Replace(value, "chapters read", "", -1)
 	return strings.TrimSpace(value)
 }
 
 // GetScore to get review score.
-func (i *ReviewModel) GetScore(bottomArea *goquery.Selection) map[string]string {
-	score := make(map[string]string)
+func (i *ReviewModel) GetScore(bottomArea *goquery.Selection) map[string]int {
+	score := make(map[string]int)
 	area := bottomArea.Find("table").First()
 	area.Find("tr").Each(func(j int, eachScore *goquery.Selection) {
 		scoreType := strings.ToLower(eachScore.Find("td:nth-of-type(1)").Text())
-		scoreValue := eachScore.Find("td:nth-of-type(2)").Text()
+		scoreValue, _ := strconv.Atoi(eachScore.Find("td:nth-of-type(2)").Text())
 		score[scoreType] = scoreValue
 	})
-
 	return score
 }
 

@@ -62,14 +62,12 @@ func (i *RecommendationModel) GetUsername(eachRecom *goquery.Selection) string {
 func (i *RecommendationModel) GetDate(eachRecom *goquery.Selection) string {
 	date := eachRecom.Find("table").First().Next().Next().Text()
 	splitDate := strings.Split(date, "-")
-
-	return splitDate[len(splitDate)-1]
+	return strings.TrimSpace(splitDate[len(splitDate)-1])
 }
 
 // GetSource to get recommendation source anime/manga.
 func (i *RecommendationModel) GetSource(eachRecom *goquery.Selection) Source {
 	area := eachRecom.Find("table tr")
-
 	return Source{
 		Liked:          i.GetSourceDetail(area),
 		Recommendation: i.GetSourceDetail(area),
@@ -88,16 +86,15 @@ func (i *RecommendationModel) GetSourceDetail(area *goquery.Selection) IdTitleTy
 	}
 
 	area.Remove()
-
 	return liked
 }
 
 // GetSourceId to get source id.
-func (i *RecommendationModel) GetSourceId(area *goquery.Selection) string {
+func (i *RecommendationModel) GetSourceId(area *goquery.Selection) int {
 	id, _ := area.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "/")
-
-	return splitId[4]
+	idInt, _ := strconv.Atoi(splitId[4])
+	return idInt
 }
 
 // GetSourceTitle to get source title.
