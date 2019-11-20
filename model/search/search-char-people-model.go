@@ -76,14 +76,17 @@ func (i *SearchCharPeopleModel) GetImage(eachSearch *goquery.Selection) string {
 }
 
 // GetId to get character/people id.
-func (i *SearchCharPeopleModel) GetId(nameArea *goquery.Selection) string {
+func (i *SearchCharPeopleModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("a").First().Attr("href")
 	splitId := strings.Split(id, "/")
 
 	if i.Type == "character" {
-		return splitId[4]
+		idInt, _ := strconv.Atoi(splitId[4])
+		return idInt
 	}
-	return splitId[2]
+
+	idInt, _ := strconv.Atoi(splitId[2])
+	return idInt
 }
 
 // GetName to get character/people name.
@@ -107,16 +110,15 @@ func (i *SearchCharPeopleModel) GetRole(t string, eachSearch *goquery.Selection)
 	area.Find("a").Each(func(j int, eachRole *goquery.Selection) {
 		id, _ := eachRole.Attr("href")
 		splitId := strings.Split(id, "/")
-
+		idInt, _ := strconv.Atoi(splitId[2])
 		roleType := splitId[1]
 
 		if t == roleType && splitId[2] != "" {
 			roleList = append(roleList, IdTitle{
-				Id:    splitId[2],
+				Id:    idInt,
 				Title: eachRole.Text(),
 			})
 		}
 	})
-
 	return roleList
 }

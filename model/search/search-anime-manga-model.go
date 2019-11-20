@@ -77,11 +77,11 @@ func (i *SearchAnimeMangaModel) GetImage(eachSearch *goquery.Selection) string {
 }
 
 // GetId to get anime/manga id.
-func (i *SearchAnimeMangaModel) GetId(nameArea *goquery.Selection) string {
+func (i *SearchAnimeMangaModel) GetId(nameArea *goquery.Selection) int {
 	id, _ := nameArea.Find("div[id^=sarea]").Attr("id")
 	id = strings.Replace(id, "sarea", "", -1)
-
-	return id
+	idInt, _ := strconv.Atoi(id)
+	return idInt
 }
 
 // GetTitle to get anime/manga title.
@@ -92,7 +92,6 @@ func (i *SearchAnimeMangaModel) GetTitle(nameArea *goquery.Selection) string {
 // GetSummary to get anime/manga summary.
 func (i *SearchAnimeMangaModel) GetSummary(nameArea *goquery.Selection) string {
 	summary := nameArea.Find(".pt4").Text()
-
 	return strings.Replace(summary, "read more.", "", -1)
 }
 
@@ -103,27 +102,31 @@ func (i *SearchAnimeMangaModel) GetType(eachSearch *goquery.Selection) string {
 }
 
 // GetProgress to get anime/manga episode/volume.
-func (i *SearchAnimeMangaModel) GetProgress(t string, eachSearch *goquery.Selection) string {
+func (i *SearchAnimeMangaModel) GetProgress(t string, eachSearch *goquery.Selection) int {
 	if i.Type != t {
-		return ""
+		return 0
 	}
 
 	progress := eachSearch.Find("td:nth-of-type(4)").Text()
 	progress = strings.TrimSpace(progress)
 
 	if progress == "-" {
-		return ""
+		return 0
 	}
-	return progress
+
+	progressInt, _ := strconv.Atoi(progress)
+	return progressInt
 }
 
 // GetScore to get anime/manga score.
-func (i *SearchAnimeMangaModel) GetScore(eachSearch *goquery.Selection) string {
+func (i *SearchAnimeMangaModel) GetScore(eachSearch *goquery.Selection) float64 {
 	score := eachSearch.Find("td:nth-of-type(5)").Text()
 	score = strings.TrimSpace(score)
 
 	if score == "N/A" {
-		return ""
+		return 0
 	}
-	return score
+
+	scoreFloat, _ := strconv.ParseFloat(score, 64)
+	return scoreFloat
 }

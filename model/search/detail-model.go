@@ -2,29 +2,29 @@ package search
 
 // SearchAnimeMangaData for main anime/manga search data model.
 type SearchAnimeMangaData struct {
-	Image   string `json:"image"`
-	Id      string `json:"id"`
-	Title   string `json:"title"`
-	Summary string `json:"summary"`
-	Type    string `json:"type"`
-	Episode string `json:"episode"`
-	Volume  string `json:"volume"`
-	Score   string `json:"score"`
+	Id      int     `json:"id"`
+	Title   string  `json:"title"`
+	Image   string  `json:"image"`
+	Type    string  `json:"type"`
+	Episode int     `json:"episode"`
+	Volume  int     `json:"volume"`
+	Score   float64 `json:"score"`
+	Summary string  `json:"summary"`
 }
 
 // SearchCharPeopleData for main character/people search data model.
 type SearchCharPeopleData struct {
-	Image    string    `json:"image"`
-	Id       string    `json:"id"`
+	Id       int       `json:"id"`
 	Name     string    `json:"name"`
 	Nickname string    `json:"nickname"`
+	Image    string    `json:"image"`
 	Anime    []IdTitle `json:"anime"`
 	Manga    []IdTitle `json:"manga"`
 }
 
 // IdTitle is common model contain id and title.
 type IdTitle struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Title string `json:"title"`
 }
 
