@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -29,7 +30,7 @@ func startHTTP(port string) error {
 }
 
 func main() {
-	port := "8005"
+	port := os.Getenv("PORT")
 
 	err := startHTTP(port)
 	if err != nil {
