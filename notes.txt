@@ -1,0 +1,28 @@
+go test ./... -coverprofile=cover.txt -failfast
+go tool cover -html=cover.txt -o ~/cover.html
+
+todo:
+- anime news
+- anime forum
+- anime featured
+- anime clubs
+- anime more info
+- character featured
+- genre meta (name + count)
+- magazine meta (name + count)
+- manga news
+- manga forum
+- manga featured
+- manga clubs
+- manga more info
+- people news
+- people featured
+- producer meta (name + count)
+- user clubs
+- user anime + manga list
+
+- user cover
+- parse all date to date format
+- db + config
+- readme
+- ci
