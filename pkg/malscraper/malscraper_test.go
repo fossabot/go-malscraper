@@ -21,7 +21,7 @@ var (
 	mal *MalService
 
 	// Sleep time between each test so we don't look like spamming their web.
-	sleepTime = 1 * time.Second
+	sleepTime = 5 * time.Second
 
 	// infoIdTest is anime/manga id for testing.
 	infoIdTest = 1
