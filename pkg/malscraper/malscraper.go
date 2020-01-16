@@ -58,7 +58,7 @@ func (m *MalService) GetAnime(id int) (anime.AnimeParser, error) {
 	return anime.InitAnimeParser(id)
 }
 
-// GetVideo to get anime's video list.
+// GetAnimeVideo to get anime's video list.
 func (m *MalService) GetAnimeVideo(id int, page ...int) (anime.VideoParser, error) {
 	return anime.InitVideoParser(id, page...)
 }
