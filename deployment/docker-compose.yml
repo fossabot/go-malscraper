@@ -1,11 +1,11 @@
 version: "2"
 
 services:
-  go_mal_api:
-    container_name: go-malscraper-container
-    image: go-malscraper-image
+  malscraper-api:
+    container_name: malscraper-container
+    image: malscraper-image
     build:
-      context: .
+      context: ./..
       dockerfile: ./build/package/Dockerfile
     ports:
       - 8005:8005

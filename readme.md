@@ -1,5 +1,3 @@
 # go-malscraper
 
-> Work in Progress
-
-Go version of my [MalScraper](https://github.com/rl404/MAL-Scraper) PHP-library. 
+`docker-compose -f deployment/docker-compose.yml up`
