@@ -40,7 +40,7 @@ func InitSeasonParser(params ...interface{}) (season SeasonParser, err error) {
 		}
 	}
 
-	if utils.InArray(constant.AnimeSeasons, season.Season) == false {
+	if !utils.InArray(constant.AnimeSeasons, season.Season) {
 		season.ResponseCode = 400
 		return season, common.ErrInvalidSeason
 	}

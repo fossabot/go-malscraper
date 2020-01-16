@@ -47,9 +47,6 @@ var (
 	// animeRecommendationIdTest is anime recommendation id for testing.
 	animeRecommendationIdTest = []int{1, 6}
 
-	// mangaRecommendationIdTest is manga recommendation id for testing.
-	mangaRecommendationIdTest = []int{1, 3}
-
 	// reviewIdTest is review id for testing.
 	reviewIdTest = 1
 

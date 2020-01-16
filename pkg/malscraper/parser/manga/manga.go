@@ -346,12 +346,6 @@ func (mp *MangaParser) getCharImage(eachCharacter *goquery.Selection) string {
 	return utils.ImageURLCleaner(charImage)
 }
 
-// getVaImage to get manga va image.
-func (mp *MangaParser) getVaImage(eachCharacter *goquery.Selection) string {
-	vaImage, _ := eachCharacter.Find("td:nth-of-type(3) table td:nth-of-type(2) img").Attr("data-src")
-	return utils.ImageURLCleaner(vaImage)
-}
-
 // setReview to set manga review.
 func (mp *MangaParser) setReview() {
 	var reviews []model.Review

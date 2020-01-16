@@ -133,7 +133,7 @@ func (cp *CharacterParser) setMedia(t string) {
 		area = area.Find("table:nth-of-type(2)")
 	}
 
-	area = area.Find("tr").Each(func(i int, media *goquery.Selection) {
+	area.Find("tr").Each(func(i int, media *goquery.Selection) {
 		mediaImage := media.Find("td:nth-of-type(1)")
 		eachArea := media.Find("td:nth-of-type(2)")
 

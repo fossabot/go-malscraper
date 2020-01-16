@@ -28,7 +28,7 @@ func InitUserHistoryParser(username string, historyType ...string) (userHistory 
 	if len(historyType) > 0 {
 		userHistory.Type = historyType[0]
 
-		if userHistory.Type != "" && utils.InArray(constant.MainType, userHistory.Type) == false {
+		if userHistory.Type != "" && !utils.InArray(constant.MainType, userHistory.Type) {
 			userHistory.ResponseCode = 400
 			return userHistory, common.ErrInvalidMainType
 		}
