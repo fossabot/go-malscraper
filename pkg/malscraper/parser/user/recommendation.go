@@ -137,7 +137,7 @@ func (user *RecommendationParser) getSourceType(area *goquery.Selection) string 
 // getSourceImage to get source image.
 func (user *RecommendationParser) getSourceImage(area *goquery.Selection) string {
 	image, _ := area.Find("img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", user.Config.CleanImageURL)
 }
 
 // getContent to get reommendation content.

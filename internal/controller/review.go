@@ -32,14 +32,14 @@ func getReview(w http.ResponseWriter, r *http.Request) {
 // getReviews is review route to get MyAnimeList review list.
 // Example: https://myanimelist.net/reviews.php
 func getReviews(w http.ResponseWriter, r *http.Request) {
-	// rType := chi.URLParam(r, "t")
+	rType := chi.URLParam(r, "t")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 
 	if page == 0 {
 		page = 1
 	}
 
-	parser, err := MalService.GetReviews()
+	parser, err := MalService.GetReviews(rType, page)
 
 	if err != nil {
 		view.RespondWithJSON(w, parser.ResponseCode, err.Error(), nil)

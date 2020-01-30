@@ -36,17 +36,20 @@ type Config struct {
 }
 
 var (
-	// Default caching time is 1 day (24 hours) if redis client is set.
+	// DefaultCacheTime is redis caching time.
+	// Default value is 1 day (24 hours) if redis client is set.
 	DefaultCacheTime = 24 * time.Hour
 
-	// Default value for cleaning image and video url.
+	// DefaultCleanImageURL for cleaning image url.
 	DefaultCleanImageURL = true
+
+	// DefaultCleanVideoURL for cleaning video url.
 	DefaultCleanVideoURL = true
 
 	// Default verbose boolean.
 	DefaultVerbose = true
 
-	// Default config.
+	// DefaultConfig for default malscraper config with its default field value.
 	DefaultConfig = Config{
 		RedisClient:   nil,
 		RedisConfig:   nil,

@@ -33,7 +33,7 @@ func TestInitParser(t *testing.T) {
 	}
 }
 
-// TestSetResponse to test set reponse code and message.
+// TestSetResponse to test set response code and message.
 func TestSetResponse(t *testing.T) {
 	var baseParser BaseParser
 	baseParser.SetResponse(200, "success")
