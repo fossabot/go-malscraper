@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/recommendation"
@@ -25,22 +26,47 @@ type RecommendationParser struct {
 }
 
 // InitRecommendationParser to initiate all fields and data of RecommendationParser.
-func InitRecommendationParser(recommendationType string, id1 int, id2 int) (recommendation RecommendationParser, err error) {
+func InitRecommendationParser(config config.Config, recommendationType string, id1 int, id2 int) (recommendation RecommendationParser, err error) {
 	recommendation.Type = recommendationType
 	recommendation.ID1 = id1
 	recommendation.ID2 = id2
+	recommendation.Config = config
 
 	if !utils.InArray(constant.MainType, recommendation.Type) {
 		recommendation.ResponseCode = 400
 		return recommendation, common.ErrInvalidMainType
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `recommendation:{type},{id1},{id2}`.
+	redisKey := constant.RedisGetRecommendation + ":" + recommendation.Type + "," + strconv.Itoa(recommendation.ID1) + "," + strconv.Itoa(recommendation.ID2)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &recommendation.Data)
+		if err != nil {
+			recommendation.SetResponse(500, err.Error())
+			return recommendation, err
+		}
+
+		if found {
+			recommendation.SetResponse(200, constant.SuccessMessage)
+			return recommendation, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = recommendation.InitParser("/recommendations/"+recommendation.Type+"/"+strconv.Itoa(recommendation.ID1)+"-"+strconv.Itoa(recommendation.ID2), "#content")
 	if err != nil {
 		return recommendation, err
 	}
 
+	// Fill in data field.
 	recommendation.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, recommendation.Data, config.CacheTime)
+	}
+
 	return recommendation, nil
 }
 
@@ -93,7 +119,7 @@ func (rp *RecommendationParser) getSourceTitle(sourceArea *goquery.Selection) st
 // getSourceImage to get anime & manga's recommendation source image.
 func (rp *RecommendationParser) getSourceImage(sourceArea *goquery.Selection) string {
 	image, _ := sourceArea.Find("img").Attr("src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // setContent to set anime & manga's recommendation content.

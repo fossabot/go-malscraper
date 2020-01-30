@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/search"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,9 +23,10 @@ type UserParser struct {
 }
 
 // InitUserParser to initiate all fields and data of UserParser.
-func InitUserParser(query string, page ...int) (user UserParser, err error) {
+func InitUserParser(config config.Config, query string, page ...int) (user UserParser, err error) {
 	user.Query = query
 	user.Page = 0
+	user.Config = config
 
 	if len(page) > 0 {
 		user.Page = 24 * (page[0] - 1)
@@ -34,12 +37,36 @@ func InitUserParser(query string, page ...int) (user UserParser, err error) {
 		return user, common.Err3LettersSearch
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `search-user:{query},{page}`.
+	redisKey := constant.RedisSearchUser + ":" + user.Query + "," + strconv.Itoa(user.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &user.Data)
+		if err != nil {
+			user.SetResponse(500, err.Error())
+			return user, err
+		}
+
+		if found {
+			user.SetResponse(200, constant.SuccessMessage)
+			return user, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = user.InitParser("/users.php?q="+user.Query+"&show="+strconv.Itoa(user.Page), "#content")
 	if err != nil {
 		return user, err
 	}
 
+	// Fill in data field.
 	user.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, user.Data, config.CacheTime)
+	}
+
 	return user, nil
 }
 
@@ -65,7 +92,7 @@ func (up *UserParser) getName(eachUser *goquery.Selection) string {
 // getImage to get user image.
 func (up *UserParser) getImage(eachUser *goquery.Selection) string {
 	image, _ := eachUser.Find("img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", up.Config.CleanImageURL)
 }
 
 // getLastOnline to get user last online date.

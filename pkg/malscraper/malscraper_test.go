@@ -4,14 +4,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-redis/redis/v7"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	searchModel "github.com/rl404/go-malscraper/pkg/malscraper/model/search"
 )
 
 var (
 	// Default config for all malscraper testing.
 	// Change to your own testing needs.
-	malConfigTest = MalConfig{
-		UseDb: false,
+	malConfigTest = config.Config{
+		RedisConfig: &redis.Options{
+			Addr: "localhost:6379",
+		},
+		CacheTime:     150 * time.Second,
+		CleanImageURL: true,
+		CleanVideoURL: true,
+		Verbose:       true,
 	}
 
 	// Malscraper service with default config.

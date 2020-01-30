@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/top"
@@ -23,10 +24,11 @@ type MangaParser struct {
 }
 
 // InitMangaParser to initiate all fields and data of MangaParser.
-func InitMangaParser(params ...int) (manga MangaParser, err error) {
+func InitMangaParser(config config.Config, params ...int) (manga MangaParser, err error) {
 	manga.StringType = ""
 	manga.Type = 0
 	manga.Page = 0
+	manga.Config = config
 
 	for i, param := range params {
 		switch i {
@@ -43,12 +45,36 @@ func InitMangaParser(params ...int) (manga MangaParser, err error) {
 		}
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `top-manga:{type},{page}`.
+	redisKey := constant.RedisGetTopManga + ":" + strconv.Itoa(manga.Type) + "," + strconv.Itoa(manga.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &manga.Data)
+		if err != nil {
+			manga.SetResponse(500, err.Error())
+			return manga, err
+		}
+
+		if found {
+			manga.SetResponse(200, constant.SuccessMessage)
+			return manga, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = manga.InitParser("/topmanga.php?type="+manga.StringType+"&limit="+strconv.Itoa(manga.Page), "#content")
 	if err != nil {
 		return manga, err
 	}
 
+	// Fill in data field.
 	manga.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, manga.Data, config.CacheTime)
+	}
+
 	return manga, nil
 }
 
@@ -87,7 +113,7 @@ func (ap *MangaParser) getRank(eachTop *goquery.Selection) int {
 // getImage to get manga image.
 func (ap *MangaParser) getImage(eachTop *goquery.Selection) string {
 	image, _ := eachTop.Find("td:nth-of-type(2) a img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", ap.Config.CleanImageURL)
 }
 
 // getID to get manga id.

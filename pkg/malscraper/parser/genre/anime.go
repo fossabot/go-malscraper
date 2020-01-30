@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/genre"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,20 +23,45 @@ type AnimeParser struct {
 }
 
 // InitAnimeParser to initiate all fields and data of AnimeParser.
-func InitAnimeParser(id int, page ...int) (genre AnimeParser, err error) {
+func InitAnimeParser(config config.Config, id int, page ...int) (genre AnimeParser, err error) {
 	genre.ID = id
 	genre.Page = 1
+	genre.Config = config
 
 	if len(page) > 0 {
 		genre.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-with-genre:{id},{page}`.
+	redisKey := constant.RedisGetAnimeWithGenre + ":" + strconv.Itoa(genre.ID) + "," + strconv.Itoa(genre.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &genre.Data)
+		if err != nil {
+			genre.SetResponse(500, err.Error())
+			return genre, err
+		}
+
+		if found {
+			genre.SetResponse(200, constant.SuccessMessage)
+			return genre, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = genre.InitParser("/anime/genre/"+strconv.Itoa(genre.ID)+"/?page="+strconv.Itoa(genre.Page), "#contentWrapper")
 	if err != nil {
 		return genre, err
 	}
 
+	// Fill in data field.
 	genre.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, genre.Data, config.CacheTime)
+	}
+
 	return genre, nil
 }
 
@@ -77,7 +104,7 @@ func (ap *AnimeParser) getID(nameArea *goquery.Selection) int {
 // getImage to get anime's image.
 func (ap *AnimeParser) getImage(eachArea *goquery.Selection) string {
 	image, _ := eachArea.Find("div.image img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", ap.Config.CleanImageURL)
 }
 
 // getTitle to get anime's title.

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -14,26 +16,51 @@ import (
 // Example: https://myanimelist.net/anime/1/Cowboy_Bebop/stats
 type StatsParser struct {
 	parser.BaseParser
-	Id   int
+	ID   int
 	Page int
 	Data model.Stats
 }
 
 // InitStatsParser to initiate all fields and data of StatsParser.
-func InitStatsParser(id int, page ...int) (stats StatsParser, err error) {
-	stats.Id = id
+func InitStatsParser(config config.Config, id int, page ...int) (stats StatsParser, err error) {
+	stats.ID = id
 	stats.Page = 0
+	stats.Config = config
 
 	if len(page) > 0 {
 		stats.Page = 75 * (page[0] - 1)
 	}
 
-	err = stats.InitParser("/anime/"+strconv.Itoa(stats.Id)+"/a/stats?m=all&show="+strconv.Itoa(stats.Page), ".js-scrollfix-bottom-rel")
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-stats:{id},{page}`.
+	redisKey := constant.RedisGetAnimeStats + ":" + strconv.Itoa(stats.ID) + "," + strconv.Itoa(stats.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &stats.Data)
+		if err != nil {
+			stats.SetResponse(500, err.Error())
+			return stats, err
+		}
+
+		if found {
+			stats.SetResponse(200, constant.SuccessMessage)
+			return stats, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
+	err = stats.InitParser("/anime/"+strconv.Itoa(stats.ID)+"/a/stats?m=all&show="+strconv.Itoa(stats.Page), ".js-scrollfix-bottom-rel")
 	if err != nil {
 		return stats, err
 	}
 
+	// Fill in data field.
 	stats.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, stats.Data, config.CacheTime)
+	}
+
 	return stats, nil
 }
 
@@ -140,7 +167,7 @@ func (sp *StatsParser) setUser() {
 // getUserImage to get user image.
 func (sp *StatsParser) getUserImage(usernameArea *goquery.Selection) string {
 	image, _ := usernameArea.Find("a").Attr("style")
-	return utils.ImageURLCleaner(image[21 : len(image)-1])
+	return utils.URLCleaner(image[21:len(image)-1], "image", sp.Config.CleanImageURL)
 }
 
 // getUsername to get user username.

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/user"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,15 +22,40 @@ type UserParser struct {
 }
 
 // InitUserParser to initiate all fields and data of UserParser.
-func InitUserParser(username string) (user UserParser, err error) {
+func InitUserParser(config config.Config, username string) (user UserParser, err error) {
 	user.Username = username
+	user.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `user:{name}`.
+	redisKey := constant.RedisGetUser + ":" + user.Username
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &user.Data)
+		if err != nil {
+			user.SetResponse(500, err.Error())
+			return user, err
+		}
+
+		if found {
+			user.SetResponse(200, constant.SuccessMessage)
+			return user, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = user.InitParser("/profile/"+user.Username, "#content")
 	if err != nil {
 		return user, err
 	}
 
+	// Fill in data field.
 	user.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, user.Data, config.CacheTime)
+	}
+
 	return user, nil
 }
 
@@ -54,7 +81,7 @@ func (user *UserParser) setUsername() {
 // setImage to set user's image.
 func (user *UserParser) setImage() {
 	imageSrc, _ := user.Parser.Find(".container-left .user-profile .user-image img").Attr("data-src")
-	user.Data.Image = utils.ImageURLCleaner(imageSrc)
+	user.Data.Image = utils.URLCleaner(imageSrc, "image", user.Config.CleanImageURL)
 }
 
 // setInfo to set user's basic info (last online, gender, etc).
@@ -115,7 +142,7 @@ func (user *UserParser) setFriend() {
 
 		friends = append(friends, model.SimpleFriend{
 			Name:  friend.Text(),
-			Image: utils.ImageURLCleaner(friendImage),
+			Image: utils.URLCleaner(friendImage, "image", user.Config.CleanImageURL),
 		})
 	})
 
@@ -233,7 +260,7 @@ func (user *UserParser) getHistoryTitle(historyDataArea *goquery.Selection) stri
 // getHistoryImage to get user's anime & manga history image.
 func (user *UserParser) getHistoryImage(history *goquery.Selection) string {
 	imageSrc, _ := history.Find("img").Attr("data-src")
-	return utils.ImageURLCleaner(imageSrc)
+	return utils.URLCleaner(imageSrc, "image", user.Config.CleanImageURL)
 }
 
 // getHistoryDate to get user's anime & manga history date.
@@ -342,7 +369,7 @@ func (user *UserParser) getFavTitle(favorite *goquery.Selection) string {
 // getFavImage to get user's favorite anime, manga, character and people image.
 func (user *UserParser) getFavImage(favorite *goquery.Selection) string {
 	image, _ := favorite.Find("img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", user.Config.CleanImageURL)
 }
 
 // getFavTypeYear to get user's favorite anime, and manga type and year.

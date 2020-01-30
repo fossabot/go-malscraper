@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/search"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,9 +23,10 @@ type CharacterParser struct {
 }
 
 // InitCharacterParser to initiate all fields and data of CharacterParser.
-func InitCharacterParser(query string, page ...int) (character CharacterParser, err error) {
+func InitCharacterParser(config config.Config, query string, page ...int) (character CharacterParser, err error) {
 	character.Query = query
 	character.Page = 0
+	character.Config = config
 
 	if len(page) > 0 {
 		character.Page = 50 * (page[0] - 1)
@@ -34,12 +37,36 @@ func InitCharacterParser(query string, page ...int) (character CharacterParser, 
 		return character, common.Err3LettersSearch
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `search-character:{query},{page}`.
+	redisKey := constant.RedisSearchCharacter + ":" + character.Query + "," + strconv.Itoa(character.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &character.Data)
+		if err != nil {
+			character.SetResponse(500, err.Error())
+			return character, err
+		}
+
+		if found {
+			character.SetResponse(200, constant.SuccessMessage)
+			return character, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = character.InitParser("/character.php?q="+character.Query+"&show="+strconv.Itoa(character.Page), "#content")
 	if err != nil {
 		return character, err
 	}
 
+	// Fill in data field.
 	character.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, character.Data, config.CacheTime)
+	}
+
 	return character, nil
 }
 
@@ -73,7 +100,7 @@ func (cp *CharacterParser) setAllDetail() {
 // getImage to get character image.
 func (cp *CharacterParser) getImage(eachSearch *goquery.Selection) string {
 	image, _ := eachSearch.Find("td div.picSurround a img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", cp.Config.CleanImageURL)
 }
 
 // getID to get character id.

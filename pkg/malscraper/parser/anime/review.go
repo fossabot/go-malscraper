@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -22,20 +24,45 @@ type ReviewParser struct {
 }
 
 // InitReviewParser to initiate all fields and data of ReviewParser.
-func InitReviewParser(id int, page ...int) (review ReviewParser, err error) {
+func InitReviewParser(config config.Config, id int, page ...int) (review ReviewParser, err error) {
 	review.ID = id
 	review.Page = 1
+	review.Config = config
 
 	if len(page) > 0 {
 		review.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-review:{id},{page}`.
+	redisKey := constant.RedisGetAnimeReview + ":" + strconv.Itoa(review.ID) + "," + strconv.Itoa(review.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &review.Data)
+		if err != nil {
+			review.SetResponse(500, err.Error())
+			return review, err
+		}
+
+		if found {
+			review.SetResponse(200, constant.SuccessMessage)
+			return review, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = review.InitParser("/anime/"+strconv.Itoa(review.ID)+"/a/reviews?p="+strconv.Itoa(review.Page), "#content")
 	if err != nil {
 		return review, err
 	}
 
+	// Fill in data field.
 	review.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, review.Data, config.CacheTime)
+	}
+
 	return review, nil
 }
 
@@ -80,7 +107,7 @@ func (rp *ReviewParser) getUsername(topArea *goquery.Selection) string {
 // getImage to get user image.
 func (rp *ReviewParser) getImage(topArea *goquery.Selection) string {
 	image, _ := topArea.Find("table td:nth-of-type(1)").Find("img").Attr("src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // getHelpful to get number of helpful.

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -19,15 +21,40 @@ type RecommendationParser struct {
 }
 
 // InitRecommendationParser to initiate all fields and data of RecommendationParser.
-func InitRecommendationParser(id int) (recommendation RecommendationParser, err error) {
+func InitRecommendationParser(config config.Config, id int) (recommendation RecommendationParser, err error) {
 	recommendation.ID = id
+	recommendation.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-recommendation:{id}`.
+	redisKey := constant.RedisGetAnimeRecommendation + ":" + strconv.Itoa(recommendation.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &recommendation.Data)
+		if err != nil {
+			recommendation.SetResponse(500, err.Error())
+			return recommendation, err
+		}
+
+		if found {
+			recommendation.SetResponse(200, constant.SuccessMessage)
+			return recommendation, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = recommendation.InitParser("/anime/"+strconv.Itoa(recommendation.ID)+"/a/userrecs", "#content")
 	if err != nil {
 		return recommendation, err
 	}
 
+	// Fill in data field.
 	recommendation.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, recommendation.Data, config.CacheTime)
+	}
+
 	return recommendation, nil
 }
 
@@ -65,7 +92,7 @@ func (rp *RecommendationParser) getTitle(contentArea *goquery.Selection) string 
 // getImage to get anime/manga image.
 func (rp *RecommendationParser) getImage(eachRecommendation *goquery.Selection) string {
 	image, _ := eachRecommendation.Find("img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // getUsers to get recommendation content.

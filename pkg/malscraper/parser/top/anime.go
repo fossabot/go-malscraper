@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/top"
@@ -23,10 +24,11 @@ type AnimeParser struct {
 }
 
 // InitAnimeParser to initiate all fields and data of AnimeParser.
-func InitAnimeParser(params ...int) (anime AnimeParser, err error) {
+func InitAnimeParser(config config.Config, params ...int) (anime AnimeParser, err error) {
 	anime.StringType = ""
 	anime.Type = 0
 	anime.Page = 0
+	anime.Config = config
 
 	for i, param := range params {
 		switch i {
@@ -43,12 +45,36 @@ func InitAnimeParser(params ...int) (anime AnimeParser, err error) {
 		}
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `top-anime:{type},{page}`.
+	redisKey := constant.RedisGetTopAnime + ":" + strconv.Itoa(anime.Type) + "," + strconv.Itoa(anime.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &anime.Data)
+		if err != nil {
+			anime.SetResponse(500, err.Error())
+			return anime, err
+		}
+
+		if found {
+			anime.SetResponse(200, constant.SuccessMessage)
+			return anime, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = anime.InitParser("/topanime.php?type="+anime.StringType+"&limit="+strconv.Itoa(anime.Page), "#content")
 	if err != nil {
 		return anime, err
 	}
 
+	// Fill in data field.
 	anime.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, anime.Data, config.CacheTime)
+	}
+
 	return anime, nil
 }
 
@@ -87,7 +113,7 @@ func (ap *AnimeParser) getRank(eachTop *goquery.Selection) int {
 // getImage to get anime image.
 func (ap *AnimeParser) getImage(eachTop *goquery.Selection) string {
 	image, _ := eachTop.Find("td:nth-of-type(2) a img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", ap.Config.CleanImageURL)
 }
 
 // getID to get anime id.

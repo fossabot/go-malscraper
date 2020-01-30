@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/magazine"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,20 +23,45 @@ type MagazineParser struct {
 }
 
 // InitMagazineParser to initiate all fields and data of MagazineParser.
-func InitMagazineParser(id int, page ...int) (magazine MagazineParser, err error) {
+func InitMagazineParser(config config.Config, id int, page ...int) (magazine MagazineParser, err error) {
 	magazine.ID = id
 	magazine.Page = 1
+	magazine.Config = config
 
 	if len(page) > 0 {
 		magazine.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `magazine:{id},{page}`.
+	redisKey := constant.RedisGetMagazine + ":" + strconv.Itoa(magazine.ID) + "," + strconv.Itoa(magazine.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &magazine.Data)
+		if err != nil {
+			magazine.SetResponse(500, err.Error())
+			return magazine, err
+		}
+
+		if found {
+			magazine.SetResponse(200, constant.SuccessMessage)
+			return magazine, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = magazine.InitParser("/manga/magazine/"+strconv.Itoa(magazine.ID)+"/?page="+strconv.Itoa(magazine.Page), "#content .js-categories-seasonal")
 	if err != nil {
 		return magazine, err
 	}
 
+	// Fill in data field.
 	magazine.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, magazine.Data, config.CacheTime)
+	}
+
 	return magazine, nil
 }
 
@@ -76,7 +103,7 @@ func (pp *MagazineParser) getID(nameArea *goquery.Selection) int {
 // getImage to get manga's image.
 func (pp *MagazineParser) getImage(eachArea *goquery.Selection) string {
 	image, _ := eachArea.Find("div.image img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", pp.Config.CleanImageURL)
 }
 
 // getTitle to get manga's title.

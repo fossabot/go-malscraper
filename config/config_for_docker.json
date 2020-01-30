@@ -1,0 +1,11 @@
+{
+	"redis": {
+		"address": "redis:6379",
+		"password": "",
+		"db": 0
+	},
+	"cleanImageURL": true,
+	"cleanVideoURL": true,
+	"cacheTime": 10,
+	"verbose": true
+}

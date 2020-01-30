@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/recommendation"
@@ -22,9 +23,10 @@ type RecommendationsParser struct {
 }
 
 // InitRecommendationsParser to initiate all fields and data of RecommendationsParser.
-func InitRecommendationsParser(rType string, page ...int) (recommend RecommendationsParser, err error) {
+func InitRecommendationsParser(config config.Config, rType string, page ...int) (recommend RecommendationsParser, err error) {
 	recommend.Type = rType
 	recommend.Page = 0
+	recommend.Config = config
 
 	if len(page) > 0 {
 		recommend.Page = 100 * (page[0] - 1)
@@ -35,12 +37,36 @@ func InitRecommendationsParser(rType string, page ...int) (recommend Recommendat
 		return recommend, common.ErrInvalidMainType
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `recommendations:{type},{id}`.
+	redisKey := constant.RedisGetRecommendations + ":" + recommend.Type + "," + strconv.Itoa(recommend.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &recommend.Data)
+		if err != nil {
+			recommend.SetResponse(500, err.Error())
+			return recommend, err
+		}
+
+		if found {
+			recommend.SetResponse(200, constant.SuccessMessage)
+			return recommend, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = recommend.InitParser("/recommendations.php?s=recentrecs&t="+recommend.Type+"&show="+strconv.Itoa(recommend.Page), "#content")
 	if err != nil {
 		return recommend, err
 	}
 
+	// Fill in data field.
 	recommend.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, recommend.Data, config.CacheTime)
+	}
+
 	return recommend, nil
 }
 
@@ -112,7 +138,7 @@ func (rp *RecommendationsParser) getSourceTitle(area *goquery.Selection) string 
 // getSourceImage to get source image.
 func (rp *RecommendationsParser) getSourceImage(area *goquery.Selection) string {
 	image, _ := area.Find("img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // getContent to get reommendation content.

@@ -7,6 +7,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/grokify/html-strip-tags-go"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/people"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -21,15 +23,40 @@ type PeopleParser struct {
 }
 
 // InitPeopleParser to initiate all fields and data of PeopleParser.
-func InitPeopleParser(id int) (people PeopleParser, err error) {
+func InitPeopleParser(config config.Config, id int) (people PeopleParser, err error) {
 	people.ID = id
+	people.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `people:{id}`.
+	redisKey := constant.RedisGetPeople + ":" + strconv.Itoa(people.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &people.Data)
+		if err != nil {
+			people.SetResponse(500, err.Error())
+			return people, err
+		}
+
+		if found {
+			people.SetResponse(200, constant.SuccessMessage)
+			return people, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = people.InitParser("/people/"+strconv.Itoa(people.ID), "#contentWrapper")
 	if err != nil {
 		return people, err
 	}
 
+	// Fill in data field.
 	people.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, people.Data, config.CacheTime)
+	}
+
 	return people, nil
 }
 
@@ -195,7 +222,7 @@ func (pp *PeopleParser) getAnimeID(animeArea *goquery.Selection) int {
 // getAnimeImage to get people's va's anime image.
 func (pp *PeopleParser) getAnimeImage(animeImageArea *goquery.Selection) string {
 	animeImage, _ := animeImageArea.Find("img").Attr("data-src")
-	return utils.ImageURLCleaner(animeImage)
+	return utils.URLCleaner(animeImage, "image", pp.Config.CleanImageURL)
 }
 
 // getAnimeTitle to get people's va's anime title.

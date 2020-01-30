@@ -3,9 +3,22 @@ language: go
 go:
   - "1.13"
 
+branches:
+  only:
+    - master
+    - dev
+  except:
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
+services:
+  - redis-server
+
 install:
   - go get -t -v ./...
   - go get github.com/mattn/goveralls
+
+before_script:
+  - cp config/config_with_redis.json config/config.json
 
 script:
   - go test -v -covermode=count -coverprofile=coverage.out ./...

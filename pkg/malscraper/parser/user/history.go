@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/user"
@@ -21,9 +22,10 @@ type UserHistoryParser struct {
 }
 
 // InitUserHistoryParser to initiate all fields and data of UserHistoryParser.
-func InitUserHistoryParser(username string, historyType ...string) (userHistory UserHistoryParser, err error) {
+func InitUserHistoryParser(config config.Config, username string, historyType ...string) (userHistory UserHistoryParser, err error) {
 	userHistory.Username = username
 	userHistory.Type = ""
+	userHistory.Config = config
 
 	if len(historyType) > 0 {
 		userHistory.Type = historyType[0]
@@ -34,6 +36,23 @@ func InitUserHistoryParser(username string, historyType ...string) (userHistory 
 		}
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `user-history:{name},{type}`.
+	redisKey := constant.RedisGetUserHistory + ":" + userHistory.Username + "," + userHistory.Type
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &userHistory.Data)
+		if err != nil {
+			userHistory.SetResponse(500, err.Error())
+			return userHistory, err
+		}
+
+		if found {
+			userHistory.SetResponse(200, constant.SuccessMessage)
+			return userHistory, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	if userHistory.Type == "" {
 		err = userHistory.InitParser("/history/"+userHistory.Username, "#content")
 	} else {
@@ -44,7 +63,14 @@ func InitUserHistoryParser(username string, historyType ...string) (userHistory 
 		return userHistory, err
 	}
 
+	// Fill in data field.
 	userHistory.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, userHistory.Data, config.CacheTime)
+	}
+
 	return userHistory, nil
 }
 

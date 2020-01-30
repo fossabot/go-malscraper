@@ -9,4 +9,6 @@ var (
 	ErrInvalidMainType = errors.New("invalid type")
 	// ErrInvalidSeason will throw if value is not a valid season name.
 	ErrInvalidSeason = errors.New("invalid season name")
+	// ErrMissingRedis will throw if redis client is nil.
+	ErrMissingRedis = errors.New("missing redis client")
 )

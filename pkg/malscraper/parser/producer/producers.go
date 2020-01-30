@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/producer"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -18,13 +20,39 @@ type ProducersParser struct {
 }
 
 // InitProducersParser to initiate all fields and data of ProducersParser.
-func InitProducersParser() (producers ProducersParser, err error) {
+func InitProducersParser(config config.Config) (producers ProducersParser, err error) {
+	producers.Config = config
+
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `producers`.
+	redisKey := constant.RedisGetProducers
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &producers.Data)
+		if err != nil {
+			producers.SetResponse(500, err.Error())
+			return producers, err
+		}
+
+		if found {
+			producers.SetResponse(200, constant.SuccessMessage)
+			return producers, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = producers.InitParser("/anime/producer", ".anime-manga-search")
 	if err != nil {
 		return producers, err
 	}
 
+	// Fill in data field.
 	producers.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, producers.Data, config.CacheTime)
+	}
+
 	return producers, nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/review"
@@ -23,9 +24,10 @@ type ReviewsParser struct {
 }
 
 // InitReviewsParser to initiate all fields and data of ReviewsParser.
-func InitReviewsParser(params ...interface{}) (reviews ReviewsParser, err error) {
-	reviews.Type = ""
+func InitReviewsParser(config config.Config, params ...interface{}) (reviews ReviewsParser, err error) {
+	reviews.Type = "anime"
 	reviews.Page = 1
+	reviews.Config = config
 
 	for i, param := range params {
 		switch i {
@@ -45,6 +47,23 @@ func InitReviewsParser(params ...interface{}) (reviews ReviewsParser, err error)
 		return reviews, common.ErrInvalidMainType
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `reviews:{type},{page}`.
+	redisKey := constant.RedisGetReviews + ":" + reviews.Type + "," + strconv.Itoa(reviews.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &reviews.Data)
+		if err != nil {
+			reviews.SetResponse(500, err.Error())
+			return reviews, err
+		}
+
+		if found {
+			reviews.SetResponse(200, constant.SuccessMessage)
+			return reviews, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	if reviews.Type != "bestvoted" {
 		err = reviews.InitParser("/reviews.php?t="+reviews.Type+"&p="+strconv.Itoa(reviews.Page), "#content")
 	} else {
@@ -55,7 +74,14 @@ func InitReviewsParser(params ...interface{}) (reviews ReviewsParser, err error)
 		return reviews, err
 	}
 
+	// Fill in data field.
 	reviews.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, reviews.Data, config.CacheTime)
+	}
+
 	return reviews, nil
 }
 
@@ -129,7 +155,7 @@ func (rp *ReviewsParser) getSourceTitle(sourceArea *goquery.Selection) string {
 // getSourceImage to get review source image.
 func (rp *ReviewsParser) getSourceImage(bottomArea *goquery.Selection) string {
 	image, _ := bottomArea.Find(".picSurround img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // getUsername to get review username.
@@ -141,7 +167,7 @@ func (rp *ReviewsParser) getUsername(topArea *goquery.Selection) string {
 // getImage to get review user image.
 func (rp *ReviewsParser) getImage(topArea *goquery.Selection) string {
 	image, _ := topArea.Find("table td img").First().Attr("src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // getHelpful to get review helpful number.

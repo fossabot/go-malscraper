@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,16 +23,41 @@ type AnimeParser struct {
 }
 
 // InitAnimeParser to initiate all fields and data of AnimeParser.
-func InitAnimeParser(id int) (animeParser AnimeParser, err error) {
+func InitAnimeParser(config config.Config, id int) (animeParser AnimeParser, err error) {
 	animeParser.ID = id
+	animeParser.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime:{id}`.
+	redisKey := constant.RedisGetAnime + ":" + strconv.Itoa(animeParser.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &animeParser.Data)
+		if err != nil {
+			animeParser.SetResponse(500, err.Error())
+			return animeParser, err
+		}
+
+		if found {
+			animeParser.SetResponse(200, constant.SuccessMessage)
+			return animeParser, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = animeParser.InitParser("/anime/"+strconv.Itoa(animeParser.ID), "#content")
 	if err != nil {
 		return animeParser, err
 	}
 
+	// Fill in data field.
 	animeParser.setDetails()
-	return animeParser, nil
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, animeParser.Data, config.CacheTime)
+	}
+
+	return animeParser, err
 }
 
 // setDetails to set anime details information.
@@ -64,7 +91,7 @@ func (ap *AnimeParser) setID() {
 // setCover to set anime cover image.
 func (ap *AnimeParser) setCover() {
 	image, _ := ap.Parser.Find("img.ac").Attr("data-src")
-	ap.Data.Cover = utils.ImageURLCleaner(image)
+	ap.Data.Cover = utils.URLCleaner(image, "image", ap.Config.CleanImageURL)
 }
 
 // setTitle to set anime title.
@@ -95,7 +122,7 @@ func (ap *AnimeParser) getAltTitle(area *goquery.Selection, t string) string {
 // setVideo to set anime promotion video.
 func (ap *AnimeParser) setVideo() {
 	video, _ := ap.Parser.Find(".video-promotion a").Attr("href")
-	ap.Data.Video = utils.VideoURLCleaner(video)
+	ap.Data.Video = utils.URLCleaner(video, "video", ap.Config.CleanVideoURL)
 }
 
 // setSynopsis to set anime synopsis.
@@ -370,13 +397,13 @@ func (ap *AnimeParser) getCharVaStaffRole(charArea *goquery.Selection) string {
 // getCharStaffImage to get anime character or staff image.
 func (ap *AnimeParser) getCharStaffImage(eachCharacter *goquery.Selection) string {
 	charImage, _ := eachCharacter.Find("tr td img").Attr("data-src")
-	return utils.ImageURLCleaner(charImage)
+	return utils.URLCleaner(charImage, "image", ap.Config.CleanImageURL)
 }
 
 // getVaImage to get anime va image.
 func (ap *AnimeParser) getVaImage(eachCharacter *goquery.Selection) string {
 	vaImage, _ := eachCharacter.Find("td:nth-of-type(3) table td:nth-of-type(2) img").Attr("data-src")
-	return utils.ImageURLCleaner(vaImage)
+	return utils.URLCleaner(vaImage, "image", ap.Config.CleanImageURL)
 }
 
 // setStaff to set anime staff involved.
@@ -464,7 +491,7 @@ func (ap *AnimeParser) getReviewUsername(topArea *goquery.Selection) string {
 // getReviewImage to get anime review user image.
 func (ap *AnimeParser) getReviewImage(topArea *goquery.Selection) string {
 	reviewImage, _ := topArea.Find("table td img").Attr("src")
-	return utils.ImageURLCleaner(reviewImage)
+	return utils.URLCleaner(reviewImage, "image", ap.Config.CleanImageURL)
 }
 
 // getReviewHelpful to get anime review helpful number.
@@ -558,7 +585,7 @@ func (ap *AnimeParser) getRecomTitle(recommendation *goquery.Selection) string {
 // getRecomImage to get anime recommendation image.
 func (ap *AnimeParser) getRecomImage(recommendation *goquery.Selection) string {
 	recomImage, _ := recommendation.Find("img").Attr("data-src")
-	return utils.ImageURLCleaner(recomImage)
+	return utils.URLCleaner(recomImage, "image", ap.Config.CleanImageURL)
 }
 
 // getRecomCount to get anime user recommendation count.

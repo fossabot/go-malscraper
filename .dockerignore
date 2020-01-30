@@ -1,0 +1,12 @@
+.git
+.travis.yml
+*.txt
+doc.go
+LICENSE
+readme.md
+
+.circleci/
+assets/
+build/
+deployment/
+examples/

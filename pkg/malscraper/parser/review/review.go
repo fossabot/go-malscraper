@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/review"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,15 +23,40 @@ type ReviewParser struct {
 }
 
 // InitReviewParser to initiate all fields and data of ReviewParser.
-func InitReviewParser(id int) (review ReviewParser, err error) {
+func InitReviewParser(config config.Config, id int) (review ReviewParser, err error) {
 	review.ID = id
+	review.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `review:{id}`.
+	redisKey := constant.RedisGetReview + ":" + strconv.Itoa(review.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &review.Data)
+		if err != nil {
+			review.SetResponse(500, err.Error())
+			return review, err
+		}
+
+		if found {
+			review.SetResponse(200, constant.SuccessMessage)
+			return review, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = review.InitParser("/reviews.php?id="+strconv.Itoa(review.ID), "#content")
 	if err != nil {
 		return review, err
 	}
 
+	// Fill in data field.
 	review.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, review.Data, config.CacheTime)
+	}
+
 	return review, nil
 }
 
@@ -90,7 +117,7 @@ func (rp *ReviewParser) getSourceTitle(topArea *goquery.Selection) string {
 // getSourceImage to get review's source image.
 func (rp *ReviewParser) getSourceImage(bottomArea *goquery.Selection) string {
 	image, _ := bottomArea.Find(".picSurround img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // setUsername to set review's user who write the review.
@@ -101,7 +128,7 @@ func (rp *ReviewParser) setUsername() {
 // setImage to set review's user image.
 func (rp *ReviewParser) setImage() {
 	image, _ := rp.Parser.Find(".borderDark .spaceit table td img").Attr("src")
-	rp.Data.Image = utils.ImageURLCleaner(image)
+	rp.Data.Image = utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // setHelpful to set review's user number who vote helpful.

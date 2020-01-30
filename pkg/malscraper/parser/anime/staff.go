@@ -4,6 +4,8 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -18,15 +20,40 @@ type StaffParser struct {
 }
 
 // InitStaffParser to initiate all fields and data of StaffParser.
-func InitStaffParser(id int) (staff StaffParser, err error) {
+func InitStaffParser(config config.Config, id int) (staff StaffParser, err error) {
 	staff.ID = id
+	staff.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-staff:{id}`.
+	redisKey := constant.RedisGetAnimeStaff + ":" + strconv.Itoa(staff.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &staff.Data)
+		if err != nil {
+			staff.SetResponse(500, err.Error())
+			return staff, err
+		}
+
+		if found {
+			staff.SetResponse(200, constant.SuccessMessage)
+			return staff, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = staff.InitParser("/anime/"+strconv.Itoa(staff.ID)+"/a/characters", ".js-scrollfix-bottom-rel")
 	if err != nil {
 		return staff, err
 	}
 
+	// Fill in data field.
 	staff.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, staff.Data, config.CacheTime)
+	}
+
 	return staff, nil
 }
 
@@ -66,7 +93,7 @@ func (csp *StaffParser) getStaffID(charNameArea *goquery.Selection) int {
 // getStaffImage to get character image.
 func (csp *StaffParser) getStaffImage(charArea *goquery.Selection) string {
 	image, _ := charArea.Find("td .picSurround img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", csp.Config.CleanImageURL)
 }
 
 // getStaffName to get character name.

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/user"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -23,20 +25,45 @@ type ReviewParser struct {
 }
 
 // InitReviewParser to initiate all fields and data of ReviewParser.
-func InitReviewParser(username string, page ...int) (review ReviewParser, err error) {
+func InitReviewParser(config config.Config, username string, page ...int) (review ReviewParser, err error) {
 	review.Username = username
 	review.Page = 1
+	review.Config = config
 
 	if len(page) > 0 {
 		review.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `user-review:{name},{page}`.
+	redisKey := constant.RedisGetUserReview + ":" + review.Username + "," + strconv.Itoa(review.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &review.Data)
+		if err != nil {
+			review.SetResponse(500, err.Error())
+			return review, err
+		}
+
+		if found {
+			review.SetResponse(200, constant.SuccessMessage)
+			return review, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = review.InitParser("/profile/"+review.Username+"/reviews?p="+strconv.Itoa(review.Page), "#content")
 	if err != nil {
 		return review, err
 	}
 
+	// Fill in data field.
 	review.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, review.Data, config.CacheTime)
+	}
+
 	return review, nil
 }
 
@@ -108,7 +135,7 @@ func (rp *ReviewParser) getSourceTitle(sourceArea *goquery.Selection) string {
 // getSourceImage to get review source image.
 func (rp *ReviewParser) getSourceImage(bottomArea *goquery.Selection) string {
 	image, _ := bottomArea.Find(".picSurround img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", rp.Config.CleanImageURL)
 }
 
 // getHelpful to get review helpful number.

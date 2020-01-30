@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/user"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,20 +22,45 @@ type UserFriendParser struct {
 }
 
 // InitUserFriendParser to initiate all fields and data of UserFriendParser.
-func InitUserFriendParser(username string, page ...int) (userFriend UserFriendParser, err error) {
+func InitUserFriendParser(config config.Config, username string, page ...int) (userFriend UserFriendParser, err error) {
 	userFriend.Username = username
 	userFriend.Page = 0
+	userFriend.Config = config
 
 	if len(page) > 0 {
 		userFriend.Page = 100 * (page[0] - 1)
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `user-friend:{name},{page}`.
+	redisKey := constant.RedisGetUserFriend + ":" + userFriend.Username + "," + strconv.Itoa(userFriend.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &userFriend.Data)
+		if err != nil {
+			userFriend.SetResponse(500, err.Error())
+			return userFriend, err
+		}
+
+		if found {
+			userFriend.SetResponse(200, constant.SuccessMessage)
+			return userFriend, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = userFriend.InitParser("/profile/"+userFriend.Username+"/friends?offset="+strconv.Itoa(userFriend.Page), "#content")
 	if err != nil {
 		return userFriend, err
 	}
 
+	// Fill in data field.
 	userFriend.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, userFriend.Data, config.CacheTime)
+	}
+
 	return userFriend, nil
 }
 
@@ -62,7 +89,7 @@ func (user *UserFriendParser) getName(friendArea *goquery.Selection) string {
 // getImage to get user's friend image.
 func (user *UserFriendParser) getImage(friendArea *goquery.Selection) string {
 	image, _ := friendArea.Find("a img").Attr("src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", user.Config.CleanImageURL)
 }
 
 // getLastOnline to get user's friend last online date.

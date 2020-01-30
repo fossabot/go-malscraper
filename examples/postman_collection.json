@@ -103,6 +103,38 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+							"raw": "{{go-malscraper-url}}/v1/user/:user/reviews?page=2",
+							"host": [
+								"{{go-malscraper-url}}"
+							],
+							"path": [
+								"v1",
+								"user",
+								":user",
+								"reviews"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								}
+							],
+							"variable": [
+								{
+									"key": "user",
+									"value": "Archaeon"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recommendation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
 							"raw": "{{go-malscraper-url}}/v1/user/:user/recommendations?page=2",
 							"host": [
 								"{{go-malscraper-url}}"

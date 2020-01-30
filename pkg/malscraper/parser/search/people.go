@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/search"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,9 +23,10 @@ type PeopleParser struct {
 }
 
 // InitPeopleParser to initiate all fields and data of PeopleParser.
-func InitPeopleParser(query string, page ...int) (people PeopleParser, err error) {
+func InitPeopleParser(config config.Config, query string, page ...int) (people PeopleParser, err error) {
 	people.Query = query
 	people.Page = 0
+	people.Config = config
 
 	if len(page) > 0 {
 		people.Page = 50 * (page[0] - 1)
@@ -34,12 +37,36 @@ func InitPeopleParser(query string, page ...int) (people PeopleParser, err error
 		return people, common.Err3LettersSearch
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `search-people:{query},{page}`.
+	redisKey := constant.RedisSearchPeople + ":" + people.Query + "," + strconv.Itoa(people.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &people.Data)
+		if err != nil {
+			people.SetResponse(500, err.Error())
+			return people, err
+		}
+
+		if found {
+			people.SetResponse(200, constant.SuccessMessage)
+			return people, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = people.InitParser("/people.php?q="+people.Query+"&show="+strconv.Itoa(people.Page), "#content")
 	if err != nil {
 		return people, err
 	}
 
+	// Fill in data field.
 	people.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, people.Data, config.CacheTime)
+	}
+
 	return people, nil
 }
 
@@ -71,7 +98,7 @@ func (cp *PeopleParser) setAllDetail() {
 // getImage to get people image.
 func (cp *PeopleParser) getImage(eachSearch *goquery.Selection) string {
 	image, _ := eachSearch.Find("td a img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", cp.Config.CleanImageURL)
 }
 
 // getID to get people id.

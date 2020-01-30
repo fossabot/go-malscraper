@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/producer"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,20 +23,45 @@ type ProducerParser struct {
 }
 
 // InitProducerParser to initiate all fields and data of ProducerParser.
-func InitProducerParser(id int, page ...int) (producer ProducerParser, err error) {
+func InitProducerParser(config config.Config, id int, page ...int) (producer ProducerParser, err error) {
 	producer.ID = id
 	producer.Page = 1
+	producer.Config = config
 
 	if len(page) > 0 {
 		producer.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `producer:{id},{page}`.
+	redisKey := constant.RedisGetProducer + ":" + strconv.Itoa(producer.ID) + "," + strconv.Itoa(producer.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &producer.Data)
+		if err != nil {
+			producer.SetResponse(500, err.Error())
+			return producer, err
+		}
+
+		if found {
+			producer.SetResponse(200, constant.SuccessMessage)
+			return producer, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = producer.InitParser("/anime/producer/"+strconv.Itoa(producer.ID)+"/?page="+strconv.Itoa(producer.Page), "#content .js-categories-seasonal")
 	if err != nil {
 		return producer, err
 	}
 
+	// Fill in data field.
 	producer.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, producer.Data, config.CacheTime)
+	}
+
 	return producer, nil
 }
 
@@ -77,7 +104,7 @@ func (pp *ProducerParser) getID(nameArea *goquery.Selection) int {
 // getImage to get anime's image.
 func (pp *ProducerParser) getImage(eachArea *goquery.Selection) string {
 	image, _ := eachArea.Find("div.image img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", pp.Config.CleanImageURL)
 }
 
 // getTitle to get anime's title.

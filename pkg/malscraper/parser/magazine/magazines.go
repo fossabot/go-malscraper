@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/magazine"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -18,13 +20,39 @@ type MagazinesParser struct {
 }
 
 // InitMagazinesParser to initiate all fields and data of MagazinesParser.
-func InitMagazinesParser() (magazines MagazinesParser, err error) {
+func InitMagazinesParser(config config.Config) (magazines MagazinesParser, err error) {
+	magazines.Config = config
+
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `magazines`.
+	redisKey := constant.RedisGetMagazines
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &magazines.Data)
+		if err != nil {
+			magazines.SetResponse(500, err.Error())
+			return magazines, err
+		}
+
+		if found {
+			magazines.SetResponse(200, constant.SuccessMessage)
+			return magazines, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = magazines.InitParser("/manga/magazine", ".anime-manga-search")
 	if err != nil {
 		return magazines, err
 	}
 
+	// Fill in data field.
 	magazines.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, magazines.Data, config.CacheTime)
+	}
+
 	return magazines, nil
 }
 
@@ -63,6 +91,7 @@ func (mp *MagazinesParser) getCount(area *goquery.Selection) int {
 	count := area.Text()
 	r := regexp.MustCompile(`\([0-9,]+\)`)
 	count = r.FindString(count)
-	count = count[1 : len(count)-1]
+	count = strings.Replace(count, "(", "", -1)
+	count = strings.Replace(count, ")", "", -1)
 	return utils.StrToNum(count)
 }

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,7 +22,7 @@ type EpisodeParser struct {
 }
 
 // InitEpisodeParser to initiate all fields and data of EpisodeParser.
-func InitEpisodeParser(id int, page ...int) (episode EpisodeParser, err error) {
+func InitEpisodeParser(config config.Config, id int, page ...int) (episode EpisodeParser, err error) {
 	episode.ID = id
 	episode.Page = 1
 
@@ -28,12 +30,36 @@ func InitEpisodeParser(id int, page ...int) (episode EpisodeParser, err error) {
 		episode.Page = 100 * (page[0] - 1)
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-episode:{id},{page}`.
+	redisKey := constant.RedisGetAnimeEpisode + ":" + strconv.Itoa(episode.ID) + "," + strconv.Itoa(episode.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &episode.Data)
+		if err != nil {
+			episode.SetResponse(500, err.Error())
+			return episode, err
+		}
+
+		if found {
+			episode.SetResponse(200, constant.SuccessMessage)
+			return episode, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = episode.InitParser("/anime/"+strconv.Itoa(episode.ID)+"/a/episode?offset="+strconv.Itoa(episode.Page), ".js-scrollfix-bottom-rel")
 	if err != nil {
 		return episode, err
 	}
 
+	// Fill in data field.
 	episode.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, episode.Data, config.CacheTime)
+	}
+
 	return episode, nil
 }
 

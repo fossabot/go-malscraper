@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/genre"
@@ -22,20 +23,45 @@ type GenresParser struct {
 }
 
 // InitGenresParser to initiate all fields and data of GenresParser.
-func InitGenresParser(gType string) (genres GenresParser, err error) {
+func InitGenresParser(config config.Config, gType string) (genres GenresParser, err error) {
 	genres.Type = gType
+	genres.Config = config
 
 	if !utils.InArray(constant.MainType, genres.Type) {
 		genres.ResponseCode = 400
 		return genres, common.ErrInvalidMainType
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `genres:{type}`.
+	redisKey := constant.RedisGetGenres + ":" + genres.Type
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &genres.Data)
+		if err != nil {
+			genres.SetResponse(500, err.Error())
+			return genres, err
+		}
+
+		if found {
+			genres.SetResponse(200, constant.SuccessMessage)
+			return genres, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = genres.InitParser("/"+genres.Type+".php", ".anime-manga-search .genre-link")
 	if err != nil {
 		return genres, err
 	}
 
+	// Fill in data field.
 	genres.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, genres.Data, config.CacheTime)
+	}
+
 	return genres, nil
 }
 

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/character"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,15 +22,40 @@ type CharacterParser struct {
 }
 
 // InitCharacterParser to initiate all fields and data of CharacterParser.
-func InitCharacterParser(id int) (character CharacterParser, err error) {
+func InitCharacterParser(config config.Config, id int) (character CharacterParser, err error) {
 	character.ID = id
+	character.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `character:{id}`.
+	redisKey := constant.RedisGetCharacter + ":" + strconv.Itoa(character.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &character.Data)
+		if err != nil {
+			character.SetResponse(500, err.Error())
+			return character, err
+		}
+
+		if found {
+			character.SetResponse(200, constant.SuccessMessage)
+			return character, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = character.InitParser("/character/"+strconv.Itoa(character.ID), "#contentWrapper")
 	if err != nil {
 		return character, err
 	}
 
+	// Fill in data field.
 	character.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, character.Data, config.CacheTime)
+	}
+
 	return character, nil
 }
 
@@ -187,7 +214,7 @@ func (cp *CharacterParser) getVaName(vaArea *goquery.Selection) string {
 // getVaImage to get character's animeography, mangaography and va image.
 func (cp *CharacterParser) getVaImage(vaArea *goquery.Selection) string {
 	image, _ := vaArea.Find("img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", cp.Config.CleanImageURL)
 }
 
 // getVaRole to get character's animeography, mangaography and va role.

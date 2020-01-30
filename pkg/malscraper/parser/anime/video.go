@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/anime"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,20 +22,45 @@ type VideoParser struct {
 }
 
 // InitVideoParser to initiate all fields and data of VideoParser.
-func InitVideoParser(id int, page ...int) (video VideoParser, err error) {
+func InitVideoParser(config config.Config, id int, page ...int) (video VideoParser, err error) {
 	video.ID = id
 	video.Page = 1
+	video.Config = config
 
 	if len(page) > 0 {
 		video.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `anime-video:{id},{page}`.
+	redisKey := constant.RedisGetAnimeVideo + ":" + strconv.Itoa(video.ID) + "," + strconv.Itoa(video.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &video.Data)
+		if err != nil {
+			video.SetResponse(500, err.Error())
+			return video, err
+		}
+
+		if found {
+			video.SetResponse(200, constant.SuccessMessage)
+			return video, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = video.InitParser("/anime/"+strconv.Itoa(video.ID)+"/a/video?p="+strconv.Itoa(video.Page), ".js-scrollfix-bottom-rel")
 	if err != nil {
 		return video, err
 	}
 
+	// Fill in data field.
 	video.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, video.Data, config.CacheTime)
+	}
+
 	return video, nil
 }
 
@@ -101,5 +128,5 @@ func (vp *VideoParser) getPromoTitle(linkArea *goquery.Selection) string {
 // getPromoLink to get promotion video link.
 func (vp *VideoParser) getPromoLink(linkArea *goquery.Selection) string {
 	link, _ := linkArea.Attr("href")
-	return utils.VideoURLCleaner(link)
+	return utils.URLCleaner(link, "video", vp.Config.CleanVideoURL)
 }

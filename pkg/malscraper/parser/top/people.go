@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/top"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,19 +22,44 @@ type PeopleParser struct {
 }
 
 // InitPeopleParser to initiate all fields and data of PeopleParser.
-func InitPeopleParser(page ...int) (people PeopleParser, err error) {
+func InitPeopleParser(config config.Config, page ...int) (people PeopleParser, err error) {
 	people.Page = 0
+	people.Config = config
 
 	if len(page) > 0 {
 		people.Page = 50 * (page[0] - 1)
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `top-people:{page}`.
+	redisKey := constant.RedisGetTopPeople + ":" + strconv.Itoa(people.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &people.Data)
+		if err != nil {
+			people.SetResponse(500, err.Error())
+			return people, err
+		}
+
+		if found {
+			people.SetResponse(200, constant.SuccessMessage)
+			return people, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = people.InitParser("/people.php?limit="+strconv.Itoa(people.Page), "#content")
 	if err != nil {
 		return people, err
 	}
 
+	// Fill in data field.
 	people.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, people.Data, config.CacheTime)
+	}
+
 	return people, nil
 }
 
@@ -89,7 +116,7 @@ func (pp *PeopleParser) getJapaneseName(nameArea *goquery.Selection) string {
 // getImage to get people image.
 func (pp *PeopleParser) getImage(nameArea *goquery.Selection) string {
 	image, _ := nameArea.Find("img").First().Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", pp.Config.CleanImageURL)
 }
 
 // getBirthday to get people birthday.

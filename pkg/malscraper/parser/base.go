@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 )
 
@@ -15,6 +16,7 @@ type BaseParser struct {
 	URL             string
 	ResponseCode    int
 	ResponseMessage error
+	Config          config.Config
 }
 
 // InitParser to initiate base fields.
@@ -46,5 +48,11 @@ func (base *BaseParser) getParser() (parser *goquery.Selection, responseCode int
 		return nil, 500, err
 	}
 
-	return doc.Find(base.ParseArea).First(), 200, errors.New("success")
+	return doc.Find(base.ParseArea).First(), 200, errors.New(constant.SuccessMessage)
+}
+
+// SetResponse to set response code and message.
+func (base *BaseParser) SetResponse(code int, message string) {
+	base.ResponseCode = code
+	base.ResponseMessage = errors.New(message)
 }

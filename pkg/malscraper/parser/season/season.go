@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
 	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/season"
@@ -23,9 +24,10 @@ type SeasonParser struct {
 }
 
 // InitSeasonParser to initiate all fields and data of SeasonParser.
-func InitSeasonParser(params ...interface{}) (season SeasonParser, err error) {
+func InitSeasonParser(config config.Config, params ...interface{}) (season SeasonParser, err error) {
 	season.Year = time.Now().Year()
 	season.Season = utils.GetCurrentSeason()
+	season.Config = config
 
 	for i, param := range params {
 		switch i {
@@ -45,12 +47,36 @@ func InitSeasonParser(params ...interface{}) (season SeasonParser, err error) {
 		return season, common.ErrInvalidSeason
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `season:{year},{season}`.
+	redisKey := constant.RedisGetSeason + ":" + strconv.Itoa(season.Year) + "," + season.Season
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &season.Data)
+		if err != nil {
+			season.SetResponse(500, err.Error())
+			return season, err
+		}
+
+		if found {
+			season.SetResponse(200, constant.SuccessMessage)
+			return season, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = season.InitParser("/anime/season/"+strconv.Itoa(season.Year)+"/"+season.Season, "#content")
 	if err != nil {
 		return season, err
 	}
 
+	// Fill in data field.
 	season.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, season.Data, config.CacheTime)
+	}
+
 	return season, nil
 }
 
@@ -90,7 +116,7 @@ func (sp *SeasonParser) getImage(eachAnime *goquery.Selection) string {
 		image, _ = eachAnime.Find("div.image img").Attr("data-src")
 	}
 
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", sp.Config.CleanImageURL)
 }
 
 // getID to get anime id.

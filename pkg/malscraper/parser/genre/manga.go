@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/genre"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,20 +23,45 @@ type MangaParser struct {
 }
 
 // InitMangaParser to initiate all fields and data of MangaParser.
-func InitMangaParser(id int, page ...int) (genre MangaParser, err error) {
+func InitMangaParser(config config.Config, id int, page ...int) (genre MangaParser, err error) {
 	genre.ID = id
 	genre.Page = 1
+	genre.Config = config
 
 	if len(page) > 0 {
 		genre.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `manga-with-genre:{id},{page}`.
+	redisKey := constant.RedisGetMangaWithGenre + ":" + strconv.Itoa(genre.ID) + "," + strconv.Itoa(genre.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &genre.Data)
+		if err != nil {
+			genre.SetResponse(500, err.Error())
+			return genre, err
+		}
+
+		if found {
+			genre.SetResponse(200, constant.SuccessMessage)
+			return genre, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = genre.InitParser("/manga/genre/"+strconv.Itoa(genre.ID)+"/?page="+strconv.Itoa(genre.Page), "#contentWrapper")
 	if err != nil {
 		return genre, err
 	}
 
+	// Fill in data field.
 	genre.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, genre.Data, config.CacheTime)
+	}
+
 	return genre, nil
 }
 
@@ -76,7 +103,7 @@ func (pp *MangaParser) getID(nameArea *goquery.Selection) int {
 // getImage to get manga's image.
 func (pp *MangaParser) getImage(eachArea *goquery.Selection) string {
 	image, _ := eachArea.Find("div.image img").Attr("data-src")
-	return utils.ImageURLCleaner(image)
+	return utils.URLCleaner(image, "image", pp.Config.CleanImageURL)
 }
 
 // getTitle to get manga's title.

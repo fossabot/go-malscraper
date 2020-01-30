@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/user"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
 	"github.com/rl404/go-malscraper/pkg/malscraper/utils"
@@ -20,20 +22,45 @@ type RecommendationParser struct {
 }
 
 // InitRecommendationParser to initiate all fields and data of RecommendationParser.
-func InitRecommendationParser(username string, page ...int) (recommendation RecommendationParser, err error) {
+func InitRecommendationParser(config config.Config, username string, page ...int) (recommendation RecommendationParser, err error) {
 	recommendation.Username = username
 	recommendation.Page = 1
+	recommendation.Config = config
 
 	if len(page) > 0 {
 		recommendation.Page = page[0]
 	}
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `user-recommendation:{name},{page}`.
+	redisKey := constant.RedisGetUserRecommendation + ":" + recommendation.Username + "," + strconv.Itoa(recommendation.Page)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &recommendation.Data)
+		if err != nil {
+			recommendation.SetResponse(500, err.Error())
+			return recommendation, err
+		}
+
+		if found {
+			recommendation.SetResponse(200, constant.SuccessMessage)
+			return recommendation, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = recommendation.InitParser("/profile/"+recommendation.Username+"/recommendations?p="+strconv.Itoa(recommendation.Page), ".container-right")
 	if err != nil {
 		return recommendation, err
 	}
 
+	// Fill in data field.
 	recommendation.setAllDetail()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, recommendation.Data, config.CacheTime)
+	}
+
 	return recommendation, nil
 }
 

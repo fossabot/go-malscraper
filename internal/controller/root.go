@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/rl404/go-malscraper/internal/config"
 	"github.com/rl404/go-malscraper/internal/view"
 	"github.com/rl404/go-malscraper/pkg/malscraper"
 )
@@ -13,7 +14,14 @@ var MalService *malscraper.MalService
 
 // init to initiate MalService instance.
 func init() {
-	MalService = malscraper.Default()
+	malConfig, err := config.GetConfig()
+	if err != nil {
+		// If there is an error in parsing config file, malscraper will be
+		// initiated with default mode (no config).
+		MalService = malscraper.Default()
+	} else {
+		MalService = malscraper.New(malConfig)
+	}
 }
 
 // RegisterRoutesV1 registers all go-malscraper routes version 1.

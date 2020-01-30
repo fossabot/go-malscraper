@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/config"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/manga"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -21,15 +23,40 @@ type MangaParser struct {
 }
 
 // InitMangaParser to initiate all fields and data of MangaParser.
-func InitMangaParser(id int) (mangaParser MangaParser, err error) {
+func InitMangaParser(config config.Config, id int) (mangaParser MangaParser, err error) {
 	mangaParser.ID = id
+	mangaParser.Config = config
 
+	// Checking to redis if using redis in config.
+	// Redis key's pattern is `manga:{id}`.
+	redisKey := constant.RedisGetManga + ":" + strconv.Itoa(mangaParser.ID)
+	if config.RedisClient != nil {
+		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &mangaParser.Data)
+		if err != nil {
+			mangaParser.SetResponse(500, err.Error())
+			return mangaParser, err
+		}
+
+		if found {
+			mangaParser.SetResponse(200, constant.SuccessMessage)
+			return mangaParser, nil
+		}
+	}
+
+	// Get MyAnimeList HTML source page and initiate the parser.
 	err = mangaParser.InitParser("/manga/"+strconv.Itoa(mangaParser.ID), "#content")
 	if err != nil {
 		return mangaParser, err
 	}
 
+	// Fill in data field.
 	mangaParser.setDetails()
+
+	// Save data field to redis if using redis in config.
+	if config.RedisClient != nil {
+		go utils.SaveToRedis(config.RedisClient, redisKey, mangaParser.Data, config.CacheTime)
+	}
+
 	return mangaParser, nil
 }
 
@@ -61,7 +88,7 @@ func (mp *MangaParser) setID() {
 // setCover to set manga cover image.
 func (mp *MangaParser) setCover() {
 	image, _ := mp.Parser.Find("img.ac").Attr("data-src")
-	mp.Data.Cover = utils.ImageURLCleaner(image)
+	mp.Data.Cover = utils.URLCleaner(image, "image", mp.Config.CleanImageURL)
 }
 
 // setTitle to set manga title.
@@ -343,7 +370,7 @@ func (mp *MangaParser) getCharRole(charArea *goquery.Selection) string {
 // getCharImage to get manga character or staff image.
 func (mp *MangaParser) getCharImage(eachCharacter *goquery.Selection) string {
 	charImage, _ := eachCharacter.Find("tr td img").Attr("data-src")
-	return utils.ImageURLCleaner(charImage)
+	return utils.URLCleaner(charImage, "image", mp.Config.CleanImageURL)
 }
 
 // setReview to set manga review.
@@ -386,7 +413,7 @@ func (mp *MangaParser) getReviewUsername(topArea *goquery.Selection) string {
 // getReviewImage to get manga review user image.
 func (mp *MangaParser) getReviewImage(topArea *goquery.Selection) string {
 	reviewImage, _ := topArea.Find("table td img").Attr("src")
-	return utils.ImageURLCleaner(reviewImage)
+	return utils.URLCleaner(reviewImage, "image", mp.Config.CleanImageURL)
 }
 
 // getReviewHelpful to get manga review helpful number.
@@ -480,7 +507,7 @@ func (mp *MangaParser) getRecomTitle(recommendation *goquery.Selection) string {
 // getRecomImage to get manga recommendation image.
 func (mp *MangaParser) getRecomImage(recommendation *goquery.Selection) string {
 	recomImage, _ := recommendation.Find("img").Attr("data-src")
-	return utils.ImageURLCleaner(recomImage)
+	return utils.URLCleaner(recomImage, "image", mp.Config.CleanImageURL)
 }
 
 // getRecomCount to get manga user recommendation count.

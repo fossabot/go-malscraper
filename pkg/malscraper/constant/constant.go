@@ -3,6 +3,9 @@ package constant
 const (
 	// MyAnimeListURL is MyAnimeList web base URL.
 	MyAnimeListURL = "https://myanimelist.net"
+
+	// SuccessMessage is a message for success response message.
+	SuccessMessage = "success"
 )
 
 var (
