@@ -46,7 +46,7 @@ var (
 	// DefaultCleanVideoURL for cleaning video url.
 	DefaultCleanVideoURL = true
 
-	// Default verbose boolean.
+	// DefaultVerbose for default verbose boolean value.
 	DefaultVerbose = true
 
 	// DefaultConfig for default malscraper config with its default field value.
