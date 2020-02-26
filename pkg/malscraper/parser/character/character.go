@@ -80,8 +80,13 @@ func (cp *CharacterParser) setID() {
 
 // setImage to set character's image.
 func (cp *CharacterParser) setImage() {
-	image := cp.Parser.Find("#content table tr td div a img")
-	cp.Data.Image, _ = image.Attr("data-src")
+	image, _ := cp.Parser.Find("#content table tr td div a").Html()
+	if image == "" {
+		cp.Data.Image = ""
+	} else {
+		image, _ := cp.Parser.Find("#content table tr td div a img").Attr("data-src")
+		cp.Data.Image = utils.URLCleaner(image, "image", cp.Config.CleanImageURL)
+	}
 }
 
 // setNickname to set character's nickname.

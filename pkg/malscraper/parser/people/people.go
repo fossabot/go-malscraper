@@ -85,7 +85,13 @@ func (pp *PeopleParser) setName() {
 
 // setImage to set people's name.
 func (pp *PeopleParser) setImage() {
-	pp.Data.Image, _ = pp.Parser.Find("#content table tr td img").Attr("data-src")
+	image, _ := pp.Parser.Find("#content table tr td div a").Html()
+	if image == "" {
+		pp.Data.Image = ""
+	} else {
+		image, _ := pp.Parser.Find("#content table tr td a img").Attr("data-src")
+		pp.Data.Image = utils.URLCleaner(image, "image", pp.Config.CleanImageURL)
+	}
 }
 
 // cleanBiodata to clean people's biodata area.
