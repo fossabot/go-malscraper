@@ -368,7 +368,7 @@ func (user *UserParser) getFavTitle(favorite *goquery.Selection) string {
 
 // getFavImage to get user's favorite anime, manga, character and people image.
 func (user *UserParser) getFavImage(favorite *goquery.Selection) string {
-	image, _ := favorite.Find("img").First().Attr("data-src")
+	image, _ := favorite.Find("img").First().Attr("src")
 	return utils.URLCleaner(image, "image", user.Config.CleanImageURL)
 }
 
