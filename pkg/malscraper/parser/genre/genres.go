@@ -28,7 +28,7 @@ func InitGenresParser(config config.Config, gType string) (genres GenresParser, 
 	genres.Config = config
 
 	if !utils.InArray(constant.MainType, genres.Type) {
-		genres.ResponseCode = 400
+		genres.ResponseCode = constant.BadRequestCode
 		return genres, common.ErrInvalidMainType
 	}
 
@@ -38,12 +38,12 @@ func InitGenresParser(config config.Config, gType string) (genres GenresParser, 
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &genres.Data)
 		if err != nil {
-			genres.SetResponse(500, err.Error())
+			genres.SetResponse(constant.InternalErrorCode, err.Error())
 			return genres, err
 		}
 
 		if found {
-			genres.SetResponse(200, constant.SuccessMessage)
+			genres.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return genres, nil
 		}
 	}

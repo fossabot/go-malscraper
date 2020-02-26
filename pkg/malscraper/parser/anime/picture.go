@@ -29,12 +29,12 @@ func InitPictureParser(config config.Config, id int) (picture PictureParser, err
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &picture.Data)
 		if err != nil {
-			picture.SetResponse(500, err.Error())
+			picture.SetResponse(constant.InternalErrorCode, err.Error())
 			return picture, err
 		}
 
 		if found {
-			picture.SetResponse(200, constant.SuccessMessage)
+			picture.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return picture, nil
 		}
 	}

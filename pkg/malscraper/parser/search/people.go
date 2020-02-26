@@ -33,7 +33,7 @@ func InitPeopleParser(config config.Config, query string, page ...int) (people P
 	}
 
 	if len(people.Query) < 3 {
-		people.ResponseCode = 400
+		people.ResponseCode = constant.BadRequestCode
 		return people, common.Err3LettersSearch
 	}
 
@@ -43,12 +43,12 @@ func InitPeopleParser(config config.Config, query string, page ...int) (people P
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &people.Data)
 		if err != nil {
-			people.SetResponse(500, err.Error())
+			people.SetResponse(constant.InternalErrorCode, err.Error())
 			return people, err
 		}
 
 		if found {
-			people.SetResponse(200, constant.SuccessMessage)
+			people.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return people, nil
 		}
 	}

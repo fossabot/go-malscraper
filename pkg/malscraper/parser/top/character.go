@@ -34,12 +34,12 @@ func InitCharacterParser(config config.Config, page ...int) (character Character
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &character.Data)
 		if err != nil {
-			character.SetResponse(500, err.Error())
+			character.SetResponse(constant.InternalErrorCode, err.Error())
 			return character, err
 		}
 
 		if found {
-			character.SetResponse(200, constant.SuccessMessage)
+			character.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return character, nil
 		}
 	}

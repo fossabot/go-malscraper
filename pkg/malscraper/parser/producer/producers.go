@@ -29,12 +29,12 @@ func InitProducersParser(config config.Config) (producers ProducersParser, err e
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &producers.Data)
 		if err != nil {
-			producers.SetResponse(500, err.Error())
+			producers.SetResponse(constant.InternalErrorCode, err.Error())
 			return producers, err
 		}
 
 		if found {
-			producers.SetResponse(200, constant.SuccessMessage)
+			producers.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return producers, nil
 		}
 	}

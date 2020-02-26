@@ -38,12 +38,12 @@ func InitMagazineParser(config config.Config, id int, page ...int) (magazine Mag
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &magazine.Data)
 		if err != nil {
-			magazine.SetResponse(500, err.Error())
+			magazine.SetResponse(constant.InternalErrorCode, err.Error())
 			return magazine, err
 		}
 
 		if found {
-			magazine.SetResponse(200, constant.SuccessMessage)
+			magazine.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return magazine, nil
 		}
 	}

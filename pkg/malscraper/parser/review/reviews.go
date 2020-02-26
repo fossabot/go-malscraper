@@ -43,7 +43,7 @@ func InitReviewsParser(config config.Config, params ...interface{}) (reviews Rev
 	}
 
 	if !utils.InArray(constant.ReviewTypes, reviews.Type) {
-		reviews.ResponseCode = 400
+		reviews.ResponseCode = constant.BadRequestCode
 		return reviews, common.ErrInvalidMainType
 	}
 
@@ -53,12 +53,12 @@ func InitReviewsParser(config config.Config, params ...interface{}) (reviews Rev
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &reviews.Data)
 		if err != nil {
-			reviews.SetResponse(500, err.Error())
+			reviews.SetResponse(constant.InternalErrorCode, err.Error())
 			return reviews, err
 		}
 
 		if found {
-			reviews.SetResponse(200, constant.SuccessMessage)
+			reviews.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return reviews, nil
 		}
 	}

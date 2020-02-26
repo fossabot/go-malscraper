@@ -33,12 +33,12 @@ func InitAnimeParser(config config.Config, id int) (animeParser AnimeParser, err
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &animeParser.Data)
 		if err != nil {
-			animeParser.SetResponse(500, err.Error())
+			animeParser.SetResponse(constant.InternalErrorCode, err.Error())
 			return animeParser, err
 		}
 
 		if found {
-			animeParser.SetResponse(200, constant.SuccessMessage)
+			animeParser.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return animeParser, nil
 		}
 	}

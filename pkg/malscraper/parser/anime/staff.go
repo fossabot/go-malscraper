@@ -30,12 +30,12 @@ func InitStaffParser(config config.Config, id int) (staff StaffParser, err error
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &staff.Data)
 		if err != nil {
-			staff.SetResponse(500, err.Error())
+			staff.SetResponse(constant.InternalErrorCode, err.Error())
 			return staff, err
 		}
 
 		if found {
-			staff.SetResponse(200, constant.SuccessMessage)
+			staff.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return staff, nil
 		}
 	}

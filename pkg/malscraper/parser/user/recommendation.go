@@ -37,12 +37,12 @@ func InitRecommendationParser(config config.Config, username string, page ...int
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &recommendation.Data)
 		if err != nil {
-			recommendation.SetResponse(500, err.Error())
+			recommendation.SetResponse(constant.InternalErrorCode, err.Error())
 			return recommendation, err
 		}
 
 		if found {
-			recommendation.SetResponse(200, constant.SuccessMessage)
+			recommendation.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return recommendation, nil
 		}
 	}

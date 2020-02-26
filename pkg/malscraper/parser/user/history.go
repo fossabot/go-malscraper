@@ -31,7 +31,7 @@ func InitUserHistoryParser(config config.Config, username string, historyType ..
 		userHistory.Type = historyType[0]
 
 		if userHistory.Type != "" && !utils.InArray(constant.MainType, userHistory.Type) {
-			userHistory.ResponseCode = 400
+			userHistory.ResponseCode = constant.BadRequestCode
 			return userHistory, common.ErrInvalidMainType
 		}
 	}
@@ -42,12 +42,12 @@ func InitUserHistoryParser(config config.Config, username string, historyType ..
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &userHistory.Data)
 		if err != nil {
-			userHistory.SetResponse(500, err.Error())
+			userHistory.SetResponse(constant.InternalErrorCode, err.Error())
 			return userHistory, err
 		}
 
 		if found {
-			userHistory.SetResponse(200, constant.SuccessMessage)
+			userHistory.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return userHistory, nil
 		}
 	}

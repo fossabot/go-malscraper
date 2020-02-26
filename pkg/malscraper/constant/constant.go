@@ -4,8 +4,18 @@ const (
 	// MyAnimeListURL is MyAnimeList web base URL.
 	MyAnimeListURL = "https://myanimelist.net"
 
+	// SuccessCode is response code for success response.
+	SuccessCode = 200
+
 	// SuccessMessage is a message for success response message.
 	SuccessMessage = "success"
+
+	// BadRequestCode is reponse code when the request param is invalid.
+	BadRequestCode = 400
+
+	// InternalErrorCode is response code if there is something wrong
+	// when processing the request.
+	InternalErrorCode = 500
 )
 
 var (

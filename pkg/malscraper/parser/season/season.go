@@ -43,7 +43,7 @@ func InitSeasonParser(config config.Config, params ...interface{}) (season Seaso
 	}
 
 	if !utils.InArray(constant.AnimeSeasons, season.Season) {
-		season.ResponseCode = 400
+		season.ResponseCode = constant.BadRequestCode
 		return season, common.ErrInvalidSeason
 	}
 
@@ -53,12 +53,12 @@ func InitSeasonParser(config config.Config, params ...interface{}) (season Seaso
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &season.Data)
 		if err != nil {
-			season.SetResponse(500, err.Error())
+			season.SetResponse(constant.InternalErrorCode, err.Error())
 			return season, err
 		}
 
 		if found {
-			season.SetResponse(200, constant.SuccessMessage)
+			season.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return season, nil
 		}
 	}

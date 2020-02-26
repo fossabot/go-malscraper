@@ -33,12 +33,12 @@ func InitMangaParser(config config.Config, id int) (mangaParser MangaParser, err
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &mangaParser.Data)
 		if err != nil {
-			mangaParser.SetResponse(500, err.Error())
+			mangaParser.SetResponse(constant.InternalErrorCode, err.Error())
 			return mangaParser, err
 		}
 
 		if found {
-			mangaParser.SetResponse(200, constant.SuccessMessage)
+			mangaParser.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return mangaParser, nil
 		}
 	}

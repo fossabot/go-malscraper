@@ -33,7 +33,7 @@ func InitCharacterParser(config config.Config, query string, page ...int) (chara
 	}
 
 	if len(character.Query) < 3 {
-		character.ResponseCode = 400
+		character.ResponseCode = constant.BadRequestCode
 		return character, common.Err3LettersSearch
 	}
 
@@ -43,12 +43,12 @@ func InitCharacterParser(config config.Config, query string, page ...int) (chara
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &character.Data)
 		if err != nil {
-			character.SetResponse(500, err.Error())
+			character.SetResponse(constant.InternalErrorCode, err.Error())
 			return character, err
 		}
 
 		if found {
-			character.SetResponse(200, constant.SuccessMessage)
+			character.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return character, nil
 		}
 	}

@@ -37,12 +37,12 @@ func InitVideoParser(config config.Config, id int, page ...int) (video VideoPars
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &video.Data)
 		if err != nil {
-			video.SetResponse(500, err.Error())
+			video.SetResponse(constant.InternalErrorCode, err.Error())
 			return video, err
 		}
 
 		if found {
-			video.SetResponse(200, constant.SuccessMessage)
+			video.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return video, nil
 		}
 	}

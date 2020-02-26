@@ -33,12 +33,12 @@ func InitReviewParser(config config.Config, id int) (review ReviewParser, err er
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &review.Data)
 		if err != nil {
-			review.SetResponse(500, err.Error())
+			review.SetResponse(constant.InternalErrorCode, err.Error())
 			return review, err
 		}
 
 		if found {
-			review.SetResponse(200, constant.SuccessMessage)
+			review.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return review, nil
 		}
 	}

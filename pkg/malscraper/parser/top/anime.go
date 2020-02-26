@@ -34,7 +34,7 @@ func InitAnimeParser(config config.Config, params ...int) (anime AnimeParser, er
 		switch i {
 		case 0:
 			if param > len(constant.TopAnimeTypes)-1 || param < 0 {
-				anime.ResponseCode = 400
+				anime.ResponseCode = constant.BadRequestCode
 				return anime, common.ErrInvalidMainType
 			}
 
@@ -51,12 +51,12 @@ func InitAnimeParser(config config.Config, params ...int) (anime AnimeParser, er
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &anime.Data)
 		if err != nil {
-			anime.SetResponse(500, err.Error())
+			anime.SetResponse(constant.InternalErrorCode, err.Error())
 			return anime, err
 		}
 
 		if found {
-			anime.SetResponse(200, constant.SuccessMessage)
+			anime.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return anime, nil
 		}
 	}

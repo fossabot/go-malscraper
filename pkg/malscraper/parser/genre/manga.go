@@ -38,12 +38,12 @@ func InitMangaParser(config config.Config, id int, page ...int) (genre MangaPars
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &genre.Data)
 		if err != nil {
-			genre.SetResponse(500, err.Error())
+			genre.SetResponse(constant.InternalErrorCode, err.Error())
 			return genre, err
 		}
 
 		if found {
-			genre.SetResponse(200, constant.SuccessMessage)
+			genre.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return genre, nil
 		}
 	}

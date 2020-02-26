@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/rl404/go-malscraper/pkg/malscraper/constant"
 	"github.com/rl404/go-malscraper/pkg/malscraper/model/common"
 	model "github.com/rl404/go-malscraper/pkg/malscraper/model/search"
 	"github.com/rl404/go-malscraper/pkg/malscraper/parser"
@@ -24,7 +25,7 @@ func InitAdvMangaParser(queryObj model.Query) (manga MangaParser, err error) {
 	manga.Query = queryObj
 
 	if len(manga.Query.Query) < 3 {
-		manga.ResponseCode = 400
+		manga.ResponseCode = constant.BadRequestCode
 		return manga, common.Err3LettersSearch
 	}
 

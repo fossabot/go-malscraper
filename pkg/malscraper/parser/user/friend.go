@@ -37,12 +37,12 @@ func InitUserFriendParser(config config.Config, username string, page ...int) (u
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &userFriend.Data)
 		if err != nil {
-			userFriend.SetResponse(500, err.Error())
+			userFriend.SetResponse(constant.InternalErrorCode, err.Error())
 			return userFriend, err
 		}
 
 		if found {
-			userFriend.SetResponse(200, constant.SuccessMessage)
+			userFriend.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return userFriend, nil
 		}
 	}

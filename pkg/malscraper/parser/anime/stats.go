@@ -37,12 +37,12 @@ func InitStatsParser(config config.Config, id int, page ...int) (stats StatsPars
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &stats.Data)
 		if err != nil {
-			stats.SetResponse(500, err.Error())
+			stats.SetResponse(constant.InternalErrorCode, err.Error())
 			return stats, err
 		}
 
 		if found {
-			stats.SetResponse(200, constant.SuccessMessage)
+			stats.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return stats, nil
 		}
 	}

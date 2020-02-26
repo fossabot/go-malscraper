@@ -33,12 +33,12 @@ func InitPeopleParser(config config.Config, id int) (people PeopleParser, err er
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &people.Data)
 		if err != nil {
-			people.SetResponse(500, err.Error())
+			people.SetResponse(constant.InternalErrorCode, err.Error())
 			return people, err
 		}
 
 		if found {
-			people.SetResponse(200, constant.SuccessMessage)
+			people.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return people, nil
 		}
 	}

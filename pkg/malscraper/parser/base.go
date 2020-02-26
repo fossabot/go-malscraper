@@ -32,10 +32,11 @@ func (base *BaseParser) InitParser(url string, parseArea string) error {
 }
 
 // getParser to get parser of requested MyAnimeList URL.
+// Get the html body and read by goquery to be converted to html parser.
 func (base *BaseParser) getParser() (parser *goquery.Selection, responseCode int, err error) {
 	resp, err := http.Get(base.URL)
 	if err != nil {
-		return nil, 500, err
+		return nil, constant.InternalErrorCode, err
 	}
 
 	defer resp.Body.Close()
@@ -45,10 +46,10 @@ func (base *BaseParser) getParser() (parser *goquery.Selection, responseCode int
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil, 500, err
+		return nil, constant.InternalErrorCode, err
 	}
 
-	return doc.Find(base.ParseArea).First(), 200, errors.New(constant.SuccessMessage)
+	return doc.Find(base.ParseArea).First(), constant.SuccessCode, errors.New(constant.SuccessMessage)
 }
 
 // SetResponse to set response code and message.

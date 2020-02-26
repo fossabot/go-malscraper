@@ -4,7 +4,7 @@
 	<a href="https://coveralls.io/github/rl404/go-malscraper"><img src="https://coveralls.io/repos/github/rl404/go-malscraper/badge.svg" alt="Coverage Status"></a>
 	<a href="https://goreportcard.com/report/github.com/rl404/go-malscraper"><img src="https://goreportcard.com/badge/github.com/rl404/go-malscraper" alt="Go Report Card"></a>
 	<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/rl404/go-malscraper.svg" alt="License: MIT"></a>
-	<a href="https://github.com/rl404/go-malscraper/wiki"><img src="https://img.shields.io/badge/docs-wiki-blue" alt="Documentation"></a>
+	<a href="https://rl404.gitbook.io/go-malscraper"><img src="https://img.shields.io/badge/docs-gitbook-blue" alt="Documentation"></a>
 </p>
 
 _go-malscraper_ is just another project scraping/parsing [MyAnimeList](https://myanimelist.net/) website to a useful and easy-to-use data by using [Go](https://golang.org/). It is a simple REST API that you can host yourself. It also provides the API library that you can use for your other Go projects.
@@ -113,11 +113,11 @@ go run main.go
     <tr>
 		<td>Get user profile</td>
 		<td>/v1/user/:user</td>
-		<td>/v1/user/:rl404</td>
+		<td>/v1/user/rl404</td>
 	</tr>
 </table>
 
-*For more detail information, please go to the [wiki](https://github.com/rl404/go-malscraper/wiki).*
+*For more detail information, please go to the [documentation](https://rl404.gitbook.io/go-malscraper/).*
 
 ## Contributing
 1. Fork it!

@@ -33,7 +33,7 @@ func InitRecommendationsParser(config config.Config, rType string, page ...int) 
 	}
 
 	if !utils.InArray(constant.MainType, recommend.Type) {
-		recommend.ResponseCode = 400
+		recommend.ResponseCode = constant.BadRequestCode
 		return recommend, common.ErrInvalidMainType
 	}
 
@@ -43,12 +43,12 @@ func InitRecommendationsParser(config config.Config, rType string, page ...int) 
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &recommend.Data)
 		if err != nil {
-			recommend.SetResponse(500, err.Error())
+			recommend.SetResponse(constant.InternalErrorCode, err.Error())
 			return recommend, err
 		}
 
 		if found {
-			recommend.SetResponse(200, constant.SuccessMessage)
+			recommend.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return recommend, nil
 		}
 	}

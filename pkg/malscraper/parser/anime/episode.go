@@ -36,12 +36,12 @@ func InitEpisodeParser(config config.Config, id int, page ...int) (episode Episo
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &episode.Data)
 		if err != nil {
-			episode.SetResponse(500, err.Error())
+			episode.SetResponse(constant.InternalErrorCode, err.Error())
 			return episode, err
 		}
 
 		if found {
-			episode.SetResponse(200, constant.SuccessMessage)
+			episode.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return episode, nil
 		}
 	}

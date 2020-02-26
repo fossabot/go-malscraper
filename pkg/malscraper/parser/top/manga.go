@@ -34,7 +34,7 @@ func InitMangaParser(config config.Config, params ...int) (manga MangaParser, er
 		switch i {
 		case 0:
 			if param > len(constant.TopMangaTypes)-1 || param < 0 {
-				manga.ResponseCode = 400
+				manga.ResponseCode = constant.BadRequestCode
 				return manga, common.ErrInvalidMainType
 			}
 
@@ -51,12 +51,12 @@ func InitMangaParser(config config.Config, params ...int) (manga MangaParser, er
 	if config.RedisClient != nil {
 		found, err := utils.UnmarshalFromRedis(config.RedisClient, redisKey, &manga.Data)
 		if err != nil {
-			manga.SetResponse(500, err.Error())
+			manga.SetResponse(constant.InternalErrorCode, err.Error())
 			return manga, err
 		}
 
 		if found {
-			manga.SetResponse(200, constant.SuccessMessage)
+			manga.SetResponse(constant.SuccessCode, constant.SuccessMessage)
 			return manga, nil
 		}
 	}
