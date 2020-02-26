@@ -96,7 +96,9 @@ func (ap *AnimeParser) setCover() {
 
 // setTitle to set anime title.
 func (ap *AnimeParser) setTitle() {
-	ap.Data.Title = ap.Parser.Parent().Find("h1.h1 span").Text()
+	titleArea := ap.Parser.Parent().Find("h1.h1 span").First()
+	titleArea.Find("span.title-english").Remove()
+	ap.Data.Title = titleArea.Text()
 }
 
 // setAltTitle to set anime alternative titles.
