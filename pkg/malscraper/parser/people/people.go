@@ -80,7 +80,7 @@ func (pp *PeopleParser) setID() {
 
 // setName to set people's name.
 func (pp *PeopleParser) setName() {
-	pp.Data.Name = pp.Parser.Find("h1").Text()
+	pp.Data.Name = pp.Parser.Find("h1.h1 span").Text()
 }
 
 // setImage to set people's name.
