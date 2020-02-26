@@ -93,7 +93,9 @@ func (mp *MangaParser) setCover() {
 
 // setTitle to set manga title.
 func (mp *MangaParser) setTitle() {
-	mp.Data.Title = mp.Parser.Parent().Find("h1.h1 span").Text()
+	titleArea := mp.Parser.Parent().Find("h1.h1 span").First()
+	titleArea.Find("span.title-english").Remove()
+	mp.Data.Title = titleArea.Text()
 }
 
 // setAltTitle to set manga alternative titles.
