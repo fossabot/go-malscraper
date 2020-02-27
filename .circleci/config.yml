@@ -8,7 +8,7 @@ jobs:
     branches:
       only:
         - master
-        - dev
+        - develop
       ignore:
         - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 

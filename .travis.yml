@@ -6,7 +6,7 @@ go:
 branches:
   only:
     - master
-    - dev
+    - develop
   except:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
